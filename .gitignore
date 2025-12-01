@@ -1,0 +1,49 @@
+# Environment variables
+.env
+*.env
+.env.local
+.env.*.local
+
+# Configuration files (avec données sensibles)
+server_config.json
+voice_config.json
+
+# Generated data files
+voice_channels.json
+voice_channels.backup
+voice_channels.tmp
+
+# Logs
+logs/
+*.log
+voice_channels.log
+
+# Database files
+*.db
+*.sqlite
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+*.egg-info/
+dist/
+build/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local
+.local/
