@@ -13,8 +13,9 @@ voice_channels.json
 voice_channels.backup
 voice_channels.tmp
 
-# Logs
+# Logs and utilities
 logs/
+utils/
 *.log
 voice_channels.log
 
