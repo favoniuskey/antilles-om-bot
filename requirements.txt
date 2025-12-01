@@ -1,0 +1,10 @@
+discord.py>=2.0.0
+requests
+aiohttp
+pytz
+python-dotenv
+bs4
+typing
+PyNaCl
+wavelink==3.2.0
+openpyxl

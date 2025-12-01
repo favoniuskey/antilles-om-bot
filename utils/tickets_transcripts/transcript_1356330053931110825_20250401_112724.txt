@@ -1,0 +1,15 @@
+=== TRANSCRIPTION TICKET SUPPORT ===
+ID: 1356330053931110825
+Créé par: 688359792854827050
+Date: 31/03/2025 18:11:24
+==================================================
+
+[31/03/2025 18:11:24] Antilles - Outre Mer: <@688359792854827050> <@&1297138129920196639> <@&1297148016725332068> <@&1309969291822760038>
+[31/03/2025 18:11:25] Antilles - Outre Mer: [Embed ou contenu spécial]
+[31/03/2025 18:11:32] lucasvolet: <@&1342914566241128530>
+[31/03/2025 18:11:48] Antilles - Outre Mer: 📝 Création de la transcription en cours...
+[31/03/2025 18:11:49] Antilles - Outre Mer: ✅ La transcription a été envoyée en message privé à <@688359792854827050>.
+[31/03/2025 18:12:10] lucasvolet: <@&1342914566241128530>
+[31/03/2025 18:12:29] lucasvolet: _test_
+[31/03/2025 18:15:15] favonius_key: Hello Dear
+[01/04/2025 11:27:22] Antilles - Outre Mer: ⚠️ Êtes-vous sûr de vouloir supprimer ce ticket ? Cette action est irréversible.

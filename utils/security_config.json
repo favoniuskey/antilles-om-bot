@@ -1,0 +1,2086 @@
+{
+    "raid_protection_enabled": true,
+    "raid_detection_threshold": 6,
+    "raid_detection_timeframe": 10,
+    "raid_mode_action": "captcha",
+    "raid_mode_duration": 360,
+    "spam_protection_enabled": true,
+    "duplicate_message_threshold": 4,
+    "duplicate_message_timeframe": 10,
+    "mention_spam_threshold": 5,
+    "emoji_spam_threshold": 10,
+    "rapid_message_threshold": 7,
+    "rapid_message_timeframe": 5,
+    "nuke_protection_enabled": true,
+    "channel_deletion_threshold": 3,
+    "channel_deletion_timeframe": 10,
+    "role_deletion_threshold": 3,
+    "role_deletion_timeframe": 10,
+    "mass_ban_threshold": 5,
+    "mass_ban_timeframe": 10,
+    "trusted_users": [
+        "595343318779428874"
+    ],
+    "trusted_roles": [],
+    "whitelisted_invites": [],
+    "blacklisted_domains": [],
+    "backup_enabled": true,
+    "backup_interval": 86400,
+    "last_backup_time": 1746138821.3464687,
+    "backups": {
+        "1224706989146378371": {
+            "timestamp": 1746138821.3237598,
+            "guild_id": "1224706989146378371",
+            "guild_name": "\ud83c\udf34 Les Antilles - OM \ud83c\udf34",
+            "channels": [
+                {
+                    "id": "1228753452063002684",
+                    "name": "\ud83c\udf0a\u30fbpiarco",
+                    "type": "text",
+                    "position": 27,
+                    "category_id": "1228750783483220008",
+                    "permissions": [
+                        {
+                            "id": "1224706989146378371",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": false
+                        },
+                        {
+                            "id": "1240788819540709476",
+                            "type": "role",
+                            "send_messages": false
+                        },
+                        {
+                            "id": "1367318833693720587",
+                            "type": "role",
+                            "read_messages": false
+                        }
+                    ],
+                    "topic": null,
+                    "slowmode_delay": 0,
+                    "nsfw": false
+                },
+                {
+                    "id": "1319794442189934655",
+                    "name": "Compagnies Virtuelles",
+                    "type": "category",
+                    "position": 3,
+                    "permissions": [
+                        {
+                            "id": "1224706989146378371",
+                            "type": "role",
+                            "mention_everyone": false
+                        }
+                    ]
+                },
+                {
+                    "id": "1313796797562490902",
+                    "name": "Tickets Support",
+                    "type": "category",
+                    "position": 8,
+                    "permissions": []
+                },
+                {
+                    "id": "1228454190981054585",
+                    "name": "\ud83d\udcdc\u30fbr\u00e8glement",
+                    "type": "text",
+                    "position": 1,
+                    "category_id": "1228669224579502211",
+                    "permissions": [
+                        {
+                            "id": "1224706989146378371",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": false
+                        },
+                        {
+                            "id": "1228453165016285246",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": false
+                        },
+                        {
+                            "id": "1240788819540709476",
+                            "type": "role",
+                            "send_messages": false
+                        },
+                        {
+                            "id": "1228450820874567690",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": false
+                        },
+                        {
+                            "id": "1228450258254827691",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": false
+                        },
+                        {
+                            "id": "1367318833693720587",
+                            "type": "role",
+                            "read_messages": false
+                        }
+                    ],
+                    "topic": "Merci d'accepter le r\u00e8glement avec la r\u00e9action ci dessous",
+                    "slowmode_delay": 0,
+                    "nsfw": false
+                },
+                {
+                    "id": "1314690895576170597",
+                    "name": "g\u00e9n\u00e9ral-staff",
+                    "type": "text",
+                    "position": 35,
+                    "category_id": "1228669526879633408",
+                    "permissions": [
+                        {
+                            "id": "1224706989146378371",
+                            "type": "role",
+                            "read_messages": false,
+                            "connect": false
+                        },
+                        {
+                            "id": "1297148016725332068",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": true,
+                            "embed_links": true,
+                            "mention_everyone": true
+                        },
+                        {
+                            "id": "1316108822086942770",
+                            "type": "role",
+                            "read_messages": true
+                        },
+                        {
+                            "id": "1367318833693720587",
+                            "type": "role",
+                            "read_messages": false
+                        }
+                    ],
+                    "topic": null,
+                    "slowmode_delay": 0,
+                    "nsfw": false
+                },
+                {
+                    "id": "1330996312899846276",
+                    "name": "liste-noire",
+                    "type": "text",
+                    "position": 39,
+                    "category_id": "1228669526879633408",
+                    "permissions": [
+                        {
+                            "id": "1224706989146378371",
+                            "type": "role",
+                            "read_messages": false
+                        },
+                        {
+                            "id": "1316108822086942770",
+                            "type": "role",
+                            "read_messages": false
+                        },
+                        {
+                            "id": "1297148016725332068",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": true,
+                            "embed_links": true,
+                            "attach_files": true,
+                            "mention_everyone": true,
+                            "send_messages_in_threads": true
+                        },
+                        {
+                            "id": "1367318833693720587",
+                            "type": "role",
+                            "read_messages": false
+                        }
+                    ],
+                    "topic": null,
+                    "slowmode_delay": 0,
+                    "nsfw": false
+                },
+                {
+                    "id": "1314697631695638698",
+                    "name": "manex-modif",
+                    "type": "text",
+                    "position": 36,
+                    "category_id": "1228669526879633408",
+                    "permissions": [
+                        {
+                            "id": "1224706989146378371",
+                            "type": "role",
+                            "read_messages": false,
+                            "connect": false
+                        },
+                        {
+                            "id": "1316108822086942770",
+                            "type": "role",
+                            "read_messages": true
+                        },
+                        {
+                            "id": "1297148016725332068",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": true,
+                            "read_message_history": true,
+                            "connect": true,
+                            "speak": true
+                        },
+                        {
+                            "id": "1367318833693720587",
+                            "type": "role",
+                            "read_messages": false
+                        }
+                    ],
+                    "topic": null,
+                    "slowmode_delay": 0,
+                    "nsfw": false
+                },
+                {
+                    "id": "1228752524677222430",
+                    "name": "\u2753\u30fbquestion",
+                    "type": "text",
+                    "position": 20,
+                    "category_id": "1224706989146378373",
+                    "permissions": [
+                        {
+                            "id": "1224706989146378371",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": true
+                        },
+                        {
+                            "id": "1228453165016285246",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": true
+                        },
+                        {
+                            "id": "1042087481044111440",
+                            "type": "member"
+                        },
+                        {
+                            "id": "1228450820874567690",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": true
+                        },
+                        {
+                            "id": "1228450258254827691",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": true
+                        },
+                        {
+                            "id": "1367318833693720587",
+                            "type": "role",
+                            "read_messages": false
+                        }
+                    ],
+                    "topic": null,
+                    "slowmode_delay": 0,
+                    "nsfw": false
+                },
+                {
+                    "id": "1310691578314100798",
+                    "name": "\ud83e\udd16-cmd-bot",
+                    "type": "text",
+                    "position": 17,
+                    "category_id": "1224706989146378373",
+                    "permissions": [
+                        {
+                            "id": "1224706989146378371",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": true
+                        },
+                        {
+                            "id": "1228453165016285246",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": true
+                        },
+                        {
+                            "id": "1240788819540709476",
+                            "type": "role",
+                            "read_messages": true,
+                            "create_instant_invite": false,
+                            "manage_channels": false,
+                            "add_reactions": false,
+                            "priority_speaker": false,
+                            "stream": false,
+                            "send_messages": false,
+                            "send_tts_messages": false,
+                            "manage_messages": false,
+                            "embed_links": false,
+                            "attach_files": false,
+                            "read_message_history": false,
+                            "mention_everyone": false,
+                            "external_emojis": false,
+                            "connect": false,
+                            "speak": false,
+                            "mute_members": false,
+                            "deafen_members": false,
+                            "move_members": false,
+                            "use_voice_activation": false,
+                            "manage_roles": false,
+                            "manage_webhooks": false,
+                            "use_application_commands": false,
+                            "request_to_speak": false,
+                            "manage_events": false,
+                            "manage_threads": false,
+                            "create_public_threads": false,
+                            "create_private_threads": false,
+                            "external_stickers": false,
+                            "send_messages_in_threads": false,
+                            "use_embedded_activities": false,
+                            "use_soundboard": false,
+                            "create_events": false,
+                            "use_external_sounds": false,
+                            "send_voice_messages": false,
+                            "send_polls": false,
+                            "use_external_apps": false
+                        },
+                        {
+                            "id": "1228450820874567690",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": true
+                        },
+                        {
+                            "id": "1228450258254827691",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": true
+                        },
+                        {
+                            "id": "1367318833693720587",
+                            "type": "role",
+                            "read_messages": false
+                        }
+                    ],
+                    "topic": "!aide #pour voir les fonctionnalit\u00e9s du bot",
+                    "slowmode_delay": 0,
+                    "nsfw": false
+                },
+                {
+                    "id": "1228528569379196999",
+                    "name": "\ud83d\udce3\u30fbannonces-lives",
+                    "type": "text",
+                    "position": 4,
+                    "category_id": "1228453752126570616",
+                    "permissions": [
+                        {
+                            "id": "1224706989146378371",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": false
+                        },
+                        {
+                            "id": "1228453165016285246",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": false
+                        },
+                        {
+                            "id": "1228450820874567690",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": false
+                        },
+                        {
+                            "id": "1228450258254827691",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": false
+                        },
+                        {
+                            "id": "1367318833693720587",
+                            "type": "role",
+                            "read_messages": false
+                        }
+                    ],
+                    "topic": null,
+                    "slowmode_delay": 0,
+                    "nsfw": false
+                },
+                {
+                    "id": "1319658362765574196",
+                    "name": "Initiation / formation",
+                    "type": "category",
+                    "position": 6,
+                    "permissions": []
+                },
+                {
+                    "id": "1228669993349021718",
+                    "name": "\ud83e\udd1d\u30fbdiscussion-vols-de-groupe",
+                    "type": "text",
+                    "position": 10,
+                    "category_id": "1224706989146378373",
+                    "permissions": [
+                        {
+                            "id": "1224706989146378371",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": true
+                        },
+                        {
+                            "id": "1228453165016285246",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": true
+                        },
+                        {
+                            "id": "1228450820874567690",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": true
+                        },
+                        {
+                            "id": "1228450258254827691",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": true
+                        },
+                        {
+                            "id": "1367318833693720587",
+                            "type": "role",
+                            "read_messages": false
+                        }
+                    ],
+                    "topic": null,
+                    "slowmode_delay": 0,
+                    "nsfw": false
+                },
+                {
+                    "id": "1224706989146378373",
+                    "name": "\ud83d\udcac\u25b8G\u00e9n\u00e9ral",
+                    "type": "category",
+                    "position": 2,
+                    "permissions": [
+                        {
+                            "id": "1224706989146378371",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": true
+                        },
+                        {
+                            "id": "1228453165016285246",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": true
+                        },
+                        {
+                            "id": "1240788819540709476",
+                            "type": "role",
+                            "read_messages": true,
+                            "create_instant_invite": false,
+                            "manage_channels": false,
+                            "add_reactions": false,
+                            "priority_speaker": false,
+                            "stream": false,
+                            "send_messages": false,
+                            "send_tts_messages": false,
+                            "manage_messages": false,
+                            "embed_links": false,
+                            "attach_files": false,
+                            "read_message_history": false,
+                            "mention_everyone": false,
+                            "external_emojis": false,
+                            "connect": false,
+                            "speak": false,
+                            "mute_members": false,
+                            "deafen_members": false,
+                            "move_members": false,
+                            "use_voice_activation": false,
+                            "manage_roles": false,
+                            "manage_webhooks": false,
+                            "use_application_commands": false,
+                            "request_to_speak": false,
+                            "manage_events": false,
+                            "manage_threads": false,
+                            "create_public_threads": false,
+                            "create_private_threads": false,
+                            "external_stickers": false,
+                            "send_messages_in_threads": false,
+                            "use_embedded_activities": false,
+                            "use_soundboard": false,
+                            "create_events": false,
+                            "use_external_sounds": false,
+                            "send_voice_messages": false,
+                            "send_polls": false,
+                            "use_external_apps": false
+                        },
+                        {
+                            "id": "1228450820874567690",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": true
+                        },
+                        {
+                            "id": "1228450258254827691",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": true
+                        }
+                    ]
+                },
+                {
+                    "id": "1264141671319470080",
+                    "name": "\ud83d\udd17\u30fbpartenaires",
+                    "type": "text",
+                    "position": 8,
+                    "category_id": "1228453752126570616",
+                    "permissions": [
+                        {
+                            "id": "1224706989146378371",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": false
+                        },
+                        {
+                            "id": "1228453165016285246",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": false
+                        },
+                        {
+                            "id": "1228450820874567690",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": false
+                        },
+                        {
+                            "id": "1228450258254827691",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": false
+                        },
+                        {
+                            "id": "1367318833693720587",
+                            "type": "role",
+                            "read_messages": false
+                        }
+                    ],
+                    "topic": null,
+                    "slowmode_delay": 0,
+                    "nsfw": false
+                },
+                {
+                    "id": "1228750783483220008",
+                    "name": "\ud83d\udcda\u25b8 DOCUMENTATION",
+                    "type": "category",
+                    "position": 5,
+                    "permissions": [
+                        {
+                            "id": "1224706989146378371",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": false,
+                            "send_messages_in_threads": false
+                        }
+                    ]
+                },
+                {
+                    "id": "1228669909249294367",
+                    "name": "\ud83d\udcda\u30fbpr\u00e9sentation",
+                    "type": "text",
+                    "position": 2,
+                    "category_id": "1228669224579502211",
+                    "permissions": [
+                        {
+                            "id": "1240788819540709476",
+                            "type": "role",
+                            "send_messages": false
+                        },
+                        {
+                            "id": "1367318833693720587",
+                            "type": "role",
+                            "read_messages": false
+                        }
+                    ],
+                    "topic": "Nouveau dans la communaut\u00e9 ? Pr\u00e9sentez vous ici !",
+                    "slowmode_delay": 0,
+                    "nsfw": false
+                },
+                {
+                    "id": "1228753477874749440",
+                    "name": "\ud83c\udf33\u30fbguyane",
+                    "type": "text",
+                    "position": 28,
+                    "category_id": "1228750783483220008",
+                    "permissions": [
+                        {
+                            "id": "1224706989146378371",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": false
+                        },
+                        {
+                            "id": "1240788819540709476",
+                            "type": "role",
+                            "send_messages": false
+                        },
+                        {
+                            "id": "1367318833693720587",
+                            "type": "role",
+                            "read_messages": false
+                        }
+                    ],
+                    "topic": null,
+                    "slowmode_delay": 0,
+                    "nsfw": false
+                },
+                {
+                    "id": "1228454882202226839",
+                    "name": "mod\u00e9ration",
+                    "type": "text",
+                    "position": 32,
+                    "category_id": "1228669526879633408",
+                    "permissions": [
+                        {
+                            "id": "1224706989146378371",
+                            "type": "role",
+                            "read_messages": false,
+                            "connect": false
+                        },
+                        {
+                            "id": "1316108822086942770",
+                            "type": "role",
+                            "read_messages": true
+                        },
+                        {
+                            "id": "1297148016725332068",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": true,
+                            "read_message_history": true,
+                            "connect": true,
+                            "speak": true
+                        },
+                        {
+                            "id": "1367318833693720587",
+                            "type": "role",
+                            "read_messages": false
+                        }
+                    ],
+                    "topic": null,
+                    "slowmode_delay": 0,
+                    "nsfw": false
+                },
+                {
+                    "id": "1228669224579502211",
+                    "name": "\ud83d\udc4b \u25b8 Accueil",
+                    "type": "category",
+                    "position": 0,
+                    "permissions": []
+                },
+                {
+                    "id": "1228669046078312529",
+                    "name": "\ud83d\udcf8\u30fbscreenshots-m\u00e9dias",
+                    "type": "text",
+                    "position": 12,
+                    "category_id": "1224706989146378373",
+                    "permissions": [
+                        {
+                            "id": "1224706989146378371",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": true
+                        },
+                        {
+                            "id": "1228453165016285246",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": true
+                        },
+                        {
+                            "id": "1228450820874567690",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": true
+                        },
+                        {
+                            "id": "1228450258254827691",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": true
+                        },
+                        {
+                            "id": "1367318833693720587",
+                            "type": "role",
+                            "read_messages": false
+                        }
+                    ],
+                    "topic": null,
+                    "slowmode_delay": 0,
+                    "nsfw": false
+                },
+                {
+                    "id": "1357062619252527124",
+                    "name": "\ud83c\udf89\u30fb\u00e9v\u00e9nement-1-an",
+                    "type": "text",
+                    "position": 11,
+                    "category_id": "1224706989146378373",
+                    "permissions": [
+                        {
+                            "id": "1224706989146378371",
+                            "type": "role",
+                            "add_reactions": true,
+                            "read_messages": true,
+                            "send_messages_in_threads": true,
+                            "send_messages": false
+                        },
+                        {
+                            "id": "1367318833693720587",
+                            "type": "role",
+                            "read_messages": false
+                        }
+                    ],
+                    "topic": null,
+                    "slowmode_delay": 0,
+                    "nsfw": false
+                },
+                {
+                    "id": "1228753418571481260",
+                    "name": "\ud83c\udf34\u30fbmartinique-guadeloupe",
+                    "type": "text",
+                    "position": 26,
+                    "category_id": "1228750783483220008",
+                    "permissions": [
+                        {
+                            "id": "1224706989146378371",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": false
+                        },
+                        {
+                            "id": "1240788819540709476",
+                            "type": "role",
+                            "send_messages": false
+                        },
+                        {
+                            "id": "1367318833693720587",
+                            "type": "role",
+                            "read_messages": false
+                        }
+                    ],
+                    "topic": null,
+                    "slowmode_delay": 0,
+                    "nsfw": false
+                },
+                {
+                    "id": "1228477224349339658",
+                    "name": "\ud83c\udf0a\u30fbbienvenue",
+                    "type": "text",
+                    "position": 0,
+                    "category_id": "1228669224579502211",
+                    "permissions": [
+                        {
+                            "id": "1224706989146378371",
+                            "type": "role",
+                            "send_messages": false
+                        },
+                        {
+                            "id": "1240788819540709476",
+                            "type": "role",
+                            "send_messages": false
+                        },
+                        {
+                            "id": "1367318833693720587",
+                            "type": "role",
+                            "read_messages": false
+                        }
+                    ],
+                    "topic": null,
+                    "slowmode_delay": 0,
+                    "nsfw": false
+                },
+                {
+                    "id": "1313433010485334036",
+                    "name": "para-bot-renew",
+                    "type": "text",
+                    "position": 34,
+                    "category_id": "1228669526879633408",
+                    "permissions": [
+                        {
+                            "id": "1224706989146378371",
+                            "type": "role",
+                            "read_messages": false,
+                            "connect": false
+                        },
+                        {
+                            "id": "1316108822086942770",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": true
+                        },
+                        {
+                            "id": "1297148016725332068",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": true,
+                            "read_message_history": true,
+                            "connect": true,
+                            "speak": true
+                        },
+                        {
+                            "id": "1367318833693720587",
+                            "type": "role",
+                            "read_messages": false
+                        }
+                    ],
+                    "topic": null,
+                    "slowmode_delay": 0,
+                    "nsfw": false
+                },
+                {
+                    "id": "1228753530932957195",
+                    "name": "\ud83d\udde3\u30fbivao-phras\u00e9ologie",
+                    "type": "text",
+                    "position": 30,
+                    "category_id": "1228750783483220008",
+                    "permissions": [
+                        {
+                            "id": "1224706989146378371",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": false
+                        },
+                        {
+                            "id": "1240788819540709476",
+                            "type": "role",
+                            "send_messages": false
+                        },
+                        {
+                            "id": "1367318833693720587",
+                            "type": "role",
+                            "read_messages": false
+                        }
+                    ],
+                    "topic": null,
+                    "slowmode_delay": 0,
+                    "nsfw": false
+                },
+                {
+                    "id": "1314697925972070442",
+                    "name": "fichiers-secteurs",
+                    "type": "text",
+                    "position": 37,
+                    "category_id": "1228669526879633408",
+                    "permissions": [
+                        {
+                            "id": "1224706989146378371",
+                            "type": "role",
+                            "read_messages": false,
+                            "connect": false
+                        },
+                        {
+                            "id": "1316108822086942770",
+                            "type": "role",
+                            "read_messages": false
+                        },
+                        {
+                            "id": "1297148016725332068",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": true,
+                            "read_message_history": true,
+                            "connect": true,
+                            "speak": true
+                        },
+                        {
+                            "id": "1367318833693720587",
+                            "type": "role",
+                            "read_messages": false
+                        }
+                    ],
+                    "topic": null,
+                    "slowmode_delay": 0,
+                    "nsfw": false
+                },
+                {
+                    "id": "1228453752126570616",
+                    "name": "\ud83c\udf20\u25b8 Informations",
+                    "type": "category",
+                    "position": 1,
+                    "permissions": [
+                        {
+                            "id": "1224706989146378371",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": false
+                        },
+                        {
+                            "id": "1228453165016285246",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": false
+                        },
+                        {
+                            "id": "1228450820874567690",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": false
+                        },
+                        {
+                            "id": "1228450258254827691",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": false
+                        }
+                    ]
+                },
+                {
+                    "id": "1297857147979436044",
+                    "name": "\ud83d\udde3\u30fbcoin-cr\u00e9ole",
+                    "type": "text",
+                    "position": 13,
+                    "category_id": "1224706989146378373",
+                    "permissions": [
+                        {
+                            "id": "1224706989146378371",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": true
+                        },
+                        {
+                            "id": "1228453165016285246",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": true
+                        },
+                        {
+                            "id": "1240788819540709476",
+                            "type": "role",
+                            "send_messages": false
+                        },
+                        {
+                            "id": "1228450820874567690",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": true
+                        },
+                        {
+                            "id": "1228450258254827691",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": true
+                        },
+                        {
+                            "id": "1367318833693720587",
+                            "type": "role",
+                            "read_messages": false
+                        }
+                    ],
+                    "topic": "Ici, on ne parle que Cr\u00e9ole !",
+                    "slowmode_delay": 0,
+                    "nsfw": false
+                },
+                {
+                    "id": "1228668601687343155",
+                    "name": "\ud83c\udfa7\u30fbticket-atc",
+                    "type": "text",
+                    "position": 24,
+                    "category_id": "1314609657284657275",
+                    "permissions": [
+                        {
+                            "id": "1224706989146378371",
+                            "type": "role",
+                            "connect": false
+                        },
+                        {
+                            "id": "1228453165016285246",
+                            "type": "role",
+                            "read_messages": true,
+                            "connect": true
+                        },
+                        {
+                            "id": "1228450820874567690",
+                            "type": "role",
+                            "read_messages": true,
+                            "connect": true,
+                            "send_messages": false
+                        },
+                        {
+                            "id": "1228450258254827691",
+                            "type": "role",
+                            "read_messages": true,
+                            "connect": true,
+                            "send_messages": false
+                        },
+                        {
+                            "id": "1367318833693720587",
+                            "type": "role",
+                            "read_messages": false
+                        }
+                    ],
+                    "topic": null,
+                    "slowmode_delay": 0,
+                    "nsfw": false
+                },
+                {
+                    "id": "1313797047844995093",
+                    "name": "Tickets ATC",
+                    "type": "category",
+                    "position": 9,
+                    "permissions": [
+                        {
+                            "id": "1228450258254827691",
+                            "type": "role"
+                        }
+                    ]
+                },
+                {
+                    "id": "1224706989146378375",
+                    "name": "\ud83d\udcac\u30fbg\u00e9n\u00e9ral",
+                    "type": "text",
+                    "position": 9,
+                    "category_id": "1224706989146378373",
+                    "permissions": [
+                        {
+                            "id": "1224706989146378371",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": true,
+                            "attach_files": false
+                        },
+                        {
+                            "id": "1228453165016285246",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": true
+                        },
+                        {
+                            "id": "1228450820874567690",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": true
+                        },
+                        {
+                            "id": "1228450258254827691",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": true
+                        },
+                        {
+                            "id": "1367318833693720587",
+                            "type": "role",
+                            "read_messages": false
+                        }
+                    ],
+                    "topic": null,
+                    "slowmode_delay": 0,
+                    "nsfw": false
+                },
+                {
+                    "id": "1319794730573496350",
+                    "name": "\ud83d\udde3\u30fbexplication-va",
+                    "type": "text",
+                    "position": 21,
+                    "category_id": "1319794442189934655",
+                    "permissions": [
+                        {
+                            "id": "1224706989146378371",
+                            "type": "role",
+                            "add_reactions": true,
+                            "read_messages": true,
+                            "send_messages": false,
+                            "embed_links": false,
+                            "attach_files": false,
+                            "create_public_threads": false,
+                            "create_private_threads": false
+                        },
+                        {
+                            "id": "1367318833693720587",
+                            "type": "role",
+                            "read_messages": false
+                        }
+                    ],
+                    "topic": null,
+                    "slowmode_delay": 0,
+                    "nsfw": false
+                },
+                {
+                    "id": "1228454285478461611",
+                    "name": "\ud83d\udce3\u30fbannonces",
+                    "type": "text",
+                    "position": 3,
+                    "category_id": "1228453752126570616",
+                    "permissions": [
+                        {
+                            "id": "1224706989146378371",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": false
+                        },
+                        {
+                            "id": "1228453165016285246",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": false
+                        },
+                        {
+                            "id": "1316108822086942770",
+                            "type": "role",
+                            "add_reactions": true,
+                            "read_messages": true,
+                            "send_messages": true,
+                            "manage_messages": true,
+                            "embed_links": true,
+                            "attach_files": true,
+                            "mention_everyone": true,
+                            "external_emojis": true,
+                            "create_public_threads": true,
+                            "external_stickers": true,
+                            "send_messages_in_threads": true,
+                            "use_external_sounds": true,
+                            "manage_channels": false,
+                            "manage_roles": false,
+                            "manage_webhooks": false
+                        },
+                        {
+                            "id": "1228450258254827691",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": false
+                        },
+                        {
+                            "id": "1228450820874567690",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": false
+                        },
+                        {
+                            "id": "1367318833693720587",
+                            "type": "role",
+                            "read_messages": false
+                        }
+                    ],
+                    "topic": "Retrouvez ici toutes les annonces en lien avec les Antilles",
+                    "slowmode_delay": 0,
+                    "nsfw": false
+                },
+                {
+                    "id": "1263262580407926958",
+                    "name": "\ud83c\udf99\u30fbafis",
+                    "type": "text",
+                    "position": 29,
+                    "category_id": "1228750783483220008",
+                    "permissions": [
+                        {
+                            "id": "1224706989146378371",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": false,
+                            "send_messages_in_threads": false
+                        },
+                        {
+                            "id": "1367318833693720587",
+                            "type": "role",
+                            "read_messages": false
+                        }
+                    ],
+                    "topic": null,
+                    "slowmode_delay": 0,
+                    "nsfw": false
+                },
+                {
+                    "id": "1310926262566387753",
+                    "name": "\ud83d\udce1\u30fbpositions_atc",
+                    "type": "text",
+                    "position": 14,
+                    "category_id": "1224706989146378373",
+                    "permissions": [
+                        {
+                            "id": "1224706989146378371",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": false
+                        },
+                        {
+                            "id": "1228453165016285246",
+                            "type": "role",
+                            "read_messages": true
+                        },
+                        {
+                            "id": "1240788819540709476",
+                            "type": "role",
+                            "read_messages": true,
+                            "create_instant_invite": false,
+                            "manage_channels": false,
+                            "add_reactions": false,
+                            "priority_speaker": false,
+                            "stream": false,
+                            "send_messages": false,
+                            "send_tts_messages": false,
+                            "manage_messages": false,
+                            "embed_links": false,
+                            "attach_files": false,
+                            "read_message_history": false,
+                            "mention_everyone": false,
+                            "external_emojis": false,
+                            "connect": false,
+                            "speak": false,
+                            "mute_members": false,
+                            "deafen_members": false,
+                            "move_members": false,
+                            "use_voice_activation": false,
+                            "manage_roles": false,
+                            "manage_webhooks": false,
+                            "use_application_commands": false,
+                            "request_to_speak": false,
+                            "manage_events": false,
+                            "manage_threads": false,
+                            "create_public_threads": false,
+                            "create_private_threads": false,
+                            "external_stickers": false,
+                            "send_messages_in_threads": false,
+                            "use_embedded_activities": false,
+                            "use_soundboard": false,
+                            "create_events": false,
+                            "use_external_sounds": false,
+                            "send_voice_messages": false,
+                            "send_polls": false,
+                            "use_external_apps": false
+                        },
+                        {
+                            "id": "1042087481044111440",
+                            "type": "member",
+                            "send_messages": false
+                        },
+                        {
+                            "id": "1228450820874567690",
+                            "type": "role",
+                            "read_messages": true
+                        },
+                        {
+                            "id": "1228450258254827691",
+                            "type": "role",
+                            "read_messages": true
+                        },
+                        {
+                            "id": "1367318833693720587",
+                            "type": "role",
+                            "read_messages": false
+                        }
+                    ],
+                    "topic": "Live ATC Monitoring system",
+                    "slowmode_delay": 0,
+                    "nsfw": false
+                },
+                {
+                    "id": "1309308532557873235",
+                    "name": "security",
+                    "type": "text",
+                    "position": 33,
+                    "category_id": "1228669526879633408",
+                    "permissions": [
+                        {
+                            "id": "1224706989146378371",
+                            "type": "role",
+                            "read_messages": false
+                        },
+                        {
+                            "id": "1240788819540709476",
+                            "type": "role",
+                            "send_messages": false
+                        },
+                        {
+                            "id": "1367318833693720587",
+                            "type": "role",
+                            "read_messages": false
+                        }
+                    ],
+                    "topic": null,
+                    "slowmode_delay": 0,
+                    "nsfw": false
+                },
+                {
+                    "id": "1228753722125848617",
+                    "name": "\u2708\u30fbrequest-metar",
+                    "type": "text",
+                    "position": 16,
+                    "category_id": "1224706989146378373",
+                    "permissions": [
+                        {
+                            "id": "1224706989146378371",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": true
+                        },
+                        {
+                            "id": "1228453165016285246",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": true
+                        },
+                        {
+                            "id": "1240788819540709476",
+                            "type": "role",
+                            "read_messages": true,
+                            "create_instant_invite": false,
+                            "manage_channels": false,
+                            "add_reactions": false,
+                            "priority_speaker": false,
+                            "stream": false,
+                            "send_messages": false,
+                            "send_tts_messages": false,
+                            "manage_messages": false,
+                            "embed_links": false,
+                            "attach_files": false,
+                            "read_message_history": false,
+                            "mention_everyone": false,
+                            "external_emojis": false,
+                            "connect": false,
+                            "speak": false,
+                            "mute_members": false,
+                            "deafen_members": false,
+                            "move_members": false,
+                            "use_voice_activation": false,
+                            "manage_roles": false,
+                            "manage_webhooks": false,
+                            "use_application_commands": false,
+                            "request_to_speak": false,
+                            "manage_events": false,
+                            "manage_threads": false,
+                            "create_public_threads": false,
+                            "create_private_threads": false,
+                            "external_stickers": false,
+                            "send_messages_in_threads": false,
+                            "use_embedded_activities": false,
+                            "use_soundboard": false,
+                            "create_events": false,
+                            "use_external_sounds": false,
+                            "send_voice_messages": false,
+                            "send_polls": false,
+                            "use_external_apps": false
+                        },
+                        {
+                            "id": "1228450820874567690",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": true
+                        },
+                        {
+                            "id": "1228450258254827691",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": true
+                        },
+                        {
+                            "id": "1367318833693720587",
+                            "type": "role",
+                            "read_messages": false
+                        }
+                    ],
+                    "topic": "#### !!!!!! > !metar , !taf, !stations et !zulu",
+                    "slowmode_delay": 0,
+                    "nsfw": false
+                },
+                {
+                    "id": "1228669526879633408",
+                    "name": "Coins Staffs",
+                    "type": "category",
+                    "position": 7,
+                    "permissions": [
+                        {
+                            "id": "1224706989146378371",
+                            "type": "role",
+                            "read_messages": false,
+                            "connect": false
+                        },
+                        {
+                            "id": "1297148016725332068",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": true,
+                            "read_message_history": true,
+                            "connect": true,
+                            "speak": true
+                        },
+                        {
+                            "id": "1316108822086942770",
+                            "type": "role",
+                            "read_messages": true
+                        }
+                    ]
+                },
+                {
+                    "id": "1319658799614787584",
+                    "name": "discussions-formation",
+                    "type": "text",
+                    "position": 31,
+                    "category_id": "1319658362765574196",
+                    "permissions": [
+                        {
+                            "id": "1367318833693720587",
+                            "type": "role",
+                            "read_messages": false
+                        }
+                    ],
+                    "topic": null,
+                    "slowmode_delay": 0,
+                    "nsfw": false
+                },
+                {
+                    "id": "1356619544034283792",
+                    "name": "commandes-bot",
+                    "type": "text",
+                    "position": 40,
+                    "category_id": "1228669526879633408",
+                    "permissions": [
+                        {
+                            "id": "1224706989146378371",
+                            "type": "role",
+                            "read_messages": false,
+                            "connect": false
+                        },
+                        {
+                            "id": "1297148016725332068",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": true,
+                            "read_message_history": true,
+                            "connect": true,
+                            "speak": true
+                        },
+                        {
+                            "id": "1316108822086942770",
+                            "type": "role",
+                            "read_messages": true
+                        },
+                        {
+                            "id": "1367318833693720587",
+                            "type": "role",
+                            "read_messages": false
+                        }
+                    ],
+                    "topic": null,
+                    "slowmode_delay": 0,
+                    "nsfw": false
+                },
+                {
+                    "id": "1319795081636483094",
+                    "name": "\u2753\u30fbquestions-va",
+                    "type": "text",
+                    "position": 22,
+                    "category_id": "1319794442189934655",
+                    "permissions": [
+                        {
+                            "id": "1224706989146378371",
+                            "type": "role",
+                            "create_instant_invite": true,
+                            "manage_channels": true,
+                            "add_reactions": true,
+                            "read_messages": true,
+                            "send_messages": true,
+                            "manage_messages": true,
+                            "embed_links": true,
+                            "attach_files": true,
+                            "read_message_history": true,
+                            "external_emojis": true,
+                            "manage_threads": true,
+                            "create_public_threads": true,
+                            "create_private_threads": true,
+                            "external_stickers": true,
+                            "send_messages_in_threads": true,
+                            "mention_everyone": false
+                        },
+                        {
+                            "id": "1367318833693720587",
+                            "type": "role",
+                            "read_messages": false
+                        }
+                    ],
+                    "topic": null,
+                    "slowmode_delay": 0,
+                    "nsfw": false
+                },
+                {
+                    "id": "1314609406029070447",
+                    "name": "\ud83d\udea8\u30fbticket-support",
+                    "type": "text",
+                    "position": 23,
+                    "category_id": "1314609657284657275",
+                    "permissions": [
+                        {
+                            "id": "1224706989146378371",
+                            "type": "role",
+                            "connect": false
+                        },
+                        {
+                            "id": "1228453165016285246",
+                            "type": "role",
+                            "read_messages": true,
+                            "connect": true
+                        },
+                        {
+                            "id": "1228450820874567690",
+                            "type": "role",
+                            "read_messages": true,
+                            "connect": true,
+                            "send_messages": false
+                        },
+                        {
+                            "id": "1228450258254827691",
+                            "type": "role",
+                            "read_messages": true,
+                            "connect": true,
+                            "send_messages": false
+                        },
+                        {
+                            "id": "1367318833693720587",
+                            "type": "role",
+                            "read_messages": false
+                        }
+                    ],
+                    "topic": null,
+                    "slowmode_delay": 0,
+                    "nsfw": false
+                },
+                {
+                    "id": "1314609657284657275",
+                    "name": "Demandes/Assistances",
+                    "type": "category",
+                    "position": 4,
+                    "permissions": [
+                        {
+                            "id": "1224706989146378371",
+                            "type": "role",
+                            "read_messages": true,
+                            "connect": false
+                        },
+                        {
+                            "id": "1228453165016285246",
+                            "type": "role",
+                            "read_messages": true,
+                            "connect": true
+                        },
+                        {
+                            "id": "1228450820874567690",
+                            "type": "role",
+                            "read_messages": true,
+                            "connect": true,
+                            "send_messages": false
+                        },
+                        {
+                            "id": "1228450258254827691",
+                            "type": "role",
+                            "read_messages": true,
+                            "connect": true,
+                            "send_messages": false
+                        }
+                    ]
+                },
+                {
+                    "id": "1314698502101663824",
+                    "name": "id\u00e9es-d-event",
+                    "type": "text",
+                    "position": 38,
+                    "category_id": "1228669526879633408",
+                    "permissions": [
+                        {
+                            "id": "1224706989146378371",
+                            "type": "role",
+                            "read_messages": false,
+                            "connect": false
+                        },
+                        {
+                            "id": "1316108822086942770",
+                            "type": "role",
+                            "read_messages": true
+                        },
+                        {
+                            "id": "1367318833693720587",
+                            "type": "role",
+                            "read_messages": false
+                        }
+                    ],
+                    "topic": null,
+                    "slowmode_delay": 0,
+                    "nsfw": false
+                },
+                {
+                    "id": "1317134328559440024",
+                    "name": "\ud83d\udce1\u30fbbooking-atc",
+                    "type": "text",
+                    "position": 15,
+                    "category_id": "1224706989146378373",
+                    "permissions": [
+                        {
+                            "id": "1224706989146378371",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": false
+                        },
+                        {
+                            "id": "1228453165016285246",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": false
+                        },
+                        {
+                            "id": "1240788819540709476",
+                            "type": "role",
+                            "read_messages": true,
+                            "create_instant_invite": false,
+                            "manage_channels": false,
+                            "add_reactions": false,
+                            "priority_speaker": false,
+                            "stream": false,
+                            "send_messages": false,
+                            "send_tts_messages": false,
+                            "manage_messages": false,
+                            "embed_links": false,
+                            "attach_files": false,
+                            "read_message_history": false,
+                            "mention_everyone": false,
+                            "external_emojis": false,
+                            "connect": false,
+                            "speak": false,
+                            "mute_members": false,
+                            "deafen_members": false,
+                            "move_members": false,
+                            "use_voice_activation": false,
+                            "manage_roles": false,
+                            "manage_webhooks": false,
+                            "use_application_commands": false,
+                            "request_to_speak": false,
+                            "manage_events": false,
+                            "manage_threads": false,
+                            "create_public_threads": false,
+                            "create_private_threads": false,
+                            "external_stickers": false,
+                            "send_messages_in_threads": false,
+                            "use_embedded_activities": false,
+                            "use_soundboard": false,
+                            "create_events": false,
+                            "use_external_sounds": false,
+                            "send_voice_messages": false,
+                            "send_polls": false,
+                            "use_external_apps": false
+                        },
+                        {
+                            "id": "1228450258254827691",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": false
+                        },
+                        {
+                            "id": "1228450820874567690",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": false
+                        },
+                        {
+                            "id": "1042087481044111440",
+                            "type": "member"
+                        },
+                        {
+                            "id": "1367318833693720587",
+                            "type": "role",
+                            "read_messages": false
+                        }
+                    ],
+                    "topic": null,
+                    "slowmode_delay": 0,
+                    "nsfw": false
+                },
+                {
+                    "id": "1228670094729809960",
+                    "name": "\ud83d\udd27\u30fbchangelog",
+                    "type": "text",
+                    "position": 7,
+                    "category_id": "1228453752126570616",
+                    "permissions": [
+                        {
+                            "id": "1224706989146378371",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": false
+                        },
+                        {
+                            "id": "1228453165016285246",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": false
+                        },
+                        {
+                            "id": "1228450820874567690",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": false
+                        },
+                        {
+                            "id": "1228450258254827691",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": false
+                        },
+                        {
+                            "id": "1367318833693720587",
+                            "type": "role",
+                            "read_messages": false
+                        }
+                    ],
+                    "topic": "Toutes les mises \u00e0 jour au niveau du discord et de la documentation sont disponibles ici !",
+                    "slowmode_delay": 0,
+                    "nsfw": false
+                },
+                {
+                    "id": "1367318829809668116",
+                    "name": "security-logs",
+                    "type": "text",
+                    "position": 41,
+                    "category_id": "1228669526879633408",
+                    "permissions": [
+                        {
+                            "id": "1224706989146378371",
+                            "type": "role",
+                            "read_messages": false
+                        },
+                        {
+                            "id": "1305253724188311676",
+                            "type": "role",
+                            "read_messages": true
+                        },
+                        {
+                            "id": "1297138129920196639",
+                            "type": "role",
+                            "read_messages": true
+                        },
+                        {
+                            "id": "1268609740280430675",
+                            "type": "role",
+                            "read_messages": true
+                        },
+                        {
+                            "id": "1297148016725332068",
+                            "type": "role",
+                            "read_messages": true
+                        },
+                        {
+                            "id": "1310007761546903635",
+                            "type": "member",
+                            "read_messages": true,
+                            "send_messages": true
+                        },
+                        {
+                            "id": "1310012714583719999",
+                            "type": "role",
+                            "read_messages": true
+                        },
+                        {
+                            "id": "1309309507738013786",
+                            "type": "role",
+                            "read_messages": true
+                        },
+                        {
+                            "id": "1228487804615655446",
+                            "type": "role",
+                            "read_messages": true
+                        },
+                        {
+                            "id": "1315631550016262277",
+                            "type": "role",
+                            "read_messages": true
+                        },
+                        {
+                            "id": "1367318833693720587",
+                            "type": "role",
+                            "read_messages": false
+                        }
+                    ],
+                    "topic": null,
+                    "slowmode_delay": 0,
+                    "nsfw": false
+                },
+                {
+                    "id": "1367318902954004510",
+                    "name": "verification",
+                    "type": "text",
+                    "position": 42,
+                    "category_id": null,
+                    "permissions": [
+                        {
+                            "id": "1224706989146378371",
+                            "type": "role",
+                            "read_messages": false,
+                            "send_messages": false
+                        },
+                        {
+                            "id": "1367318833693720587",
+                            "type": "role",
+                            "read_messages": true,
+                            "send_messages": true
+                        },
+                        {
+                            "id": "1310007761546903635",
+                            "type": "member",
+                            "read_messages": true,
+                            "send_messages": true
+                        }
+                    ],
+                    "topic": "Entrez le code de v\u00e9rification qui vous a \u00e9t\u00e9 envoy\u00e9 par message priv\u00e9.",
+                    "slowmode_delay": 0,
+                    "nsfw": false
+                }
+            ],
+            "roles": [
+                {
+                    "id": "1367318833693720587",
+                    "name": "Non v\u00e9rifi\u00e9",
+                    "color": 0,
+                    "hoist": false,
+                    "position": 1,
+                    "permissions": 0,
+                    "mentionable": false
+                },
+                {
+                    "id": "1361788619123196129",
+                    "name": "SporkMP3",
+                    "color": 0,
+                    "hoist": false,
+                    "position": 1,
+                    "permissions": 274914724928,
+                    "mentionable": false
+                },
+                {
+                    "id": "1346201678176849965",
+                    "name": "NotifyMe",
+                    "color": 0,
+                    "hoist": false,
+                    "position": 2,
+                    "permissions": 805751808,
+                    "mentionable": false
+                },
+                {
+                    "id": "1315631550016262277",
+                    "name": "Antilles - Assistance",
+                    "color": 0,
+                    "hoist": false,
+                    "position": 3,
+                    "permissions": 8,
+                    "mentionable": false
+                },
+                {
+                    "id": "1305253724188311676",
+                    "name": "Streamcord",
+                    "color": 0,
+                    "hoist": false,
+                    "position": 4,
+                    "permissions": 9395686408,
+                    "mentionable": false
+                },
+                {
+                    "id": "1268609740280430675",
+                    "name": "Dyno",
+                    "color": 0,
+                    "hoist": false,
+                    "position": 5,
+                    "permissions": 1513962695871,
+                    "mentionable": false
+                },
+                {
+                    "id": "1267131957649870911",
+                    "name": "Responsable accueil",
+                    "color": 0,
+                    "hoist": false,
+                    "position": 6,
+                    "permissions": 1721807559716807,
+                    "mentionable": false
+                },
+                {
+                    "id": "1240788819540709476",
+                    "name": "Muted",
+                    "color": 8487814,
+                    "hoist": false,
+                    "position": 7,
+                    "permissions": 0,
+                    "mentionable": false
+                },
+                {
+                    "id": "1230281547832098858",
+                    "name": "Server Booster",
+                    "color": 16023551,
+                    "hoist": false,
+                    "position": 8,
+                    "permissions": 1096185279794753,
+                    "mentionable": false
+                },
+                {
+                    "id": "1229688147735216198",
+                    "name": "V\u00e9rifi\u00e9",
+                    "color": 6550924,
+                    "hoist": false,
+                    "position": 9,
+                    "permissions": 1096185279794753,
+                    "mentionable": false
+                },
+                {
+                    "id": "1229500248351707278",
+                    "name": "AFIS",
+                    "color": 15158332,
+                    "hoist": false,
+                    "position": 10,
+                    "permissions": 0,
+                    "mentionable": false
+                },
+                {
+                    "id": "1229498324403490867",
+                    "name": "Cayenne",
+                    "color": 2067276,
+                    "hoist": false,
+                    "position": 11,
+                    "permissions": 0,
+                    "mentionable": false
+                },
+                {
+                    "id": "1229498274634006528",
+                    "name": "Martinique",
+                    "color": 3066993,
+                    "hoist": false,
+                    "position": 12,
+                    "permissions": 0,
+                    "mentionable": false
+                },
+                {
+                    "id": "1229498213174870138",
+                    "name": "D\u00e9butant",
+                    "color": 15105570,
+                    "hoist": false,
+                    "position": 13,
+                    "permissions": 0,
+                    "mentionable": false
+                },
+                {
+                    "id": "1229496535583035433",
+                    "name": "Le Raizet",
+                    "color": 3447003,
+                    "hoist": false,
+                    "position": 14,
+                    "permissions": 0,
+                    "mentionable": false
+                },
+                {
+                    "id": "1228487804615655446",
+                    "name": "BOTS",
+                    "color": 15277667,
+                    "hoist": true,
+                    "position": 15,
+                    "permissions": 271582745,
+                    "mentionable": true
+                },
+                {
+                    "id": "1228453165016285246",
+                    "name": "Membre",
+                    "color": 1752220,
+                    "hoist": true,
+                    "position": 16,
+                    "permissions": 1024,
+                    "mentionable": false
+                },
+                {
+                    "id": "1228450820874567690",
+                    "name": "Pilote",
+                    "color": 361625,
+                    "hoist": false,
+                    "position": 17,
+                    "permissions": 132096,
+                    "mentionable": false
+                },
+                {
+                    "id": "1228450258254827691",
+                    "name": "Contr\u00f4leur",
+                    "color": 2067276,
+                    "hoist": false,
+                    "position": 18,
+                    "permissions": 132096,
+                    "mentionable": false
+                },
+                {
+                    "id": "1342914566241128530",
+                    "name": "Staff IVAO",
+                    "color": 7419530,
+                    "hoist": false,
+                    "position": 19,
+                    "permissions": 282574518747136,
+                    "mentionable": false
+                },
+                {
+                    "id": "1358503350424834159",
+                    "name": "Participant \u00e9v\u00e8nement",
+                    "color": 15844367,
+                    "hoist": true,
+                    "position": 20,
+                    "permissions": 0,
+                    "mentionable": true
+                },
+                {
+                    "id": "1316108822086942770",
+                    "name": "P\u00f4le \u00e9v\u00e8nement",
+                    "color": 11027200,
+                    "hoist": true,
+                    "position": 21,
+                    "permissions": 946247867813953,
+                    "mentionable": true
+                },
+                {
+                    "id": "1310012714583719999",
+                    "name": "Antilles - Outre Mer",
+                    "color": 0,
+                    "hoist": false,
+                    "position": 22,
+                    "permissions": 8,
+                    "mentionable": false
+                },
+                {
+                    "id": "1309969291822760038",
+                    "name": "Helper",
+                    "color": 15158332,
+                    "hoist": false,
+                    "position": 23,
+                    "permissions": 982410644159169,
+                    "mentionable": false
+                },
+                {
+                    "id": "1297148016725332068",
+                    "name": "Mod\u00e9rateur",
+                    "color": 15277667,
+                    "hoist": true,
+                    "position": 24,
+                    "permissions": 67108873,
+                    "mentionable": false
+                },
+                {
+                    "id": "1309309507738013786",
+                    "name": ".\\",
+                    "color": 15277667,
+                    "hoist": false,
+                    "position": 25,
+                    "permissions": 8,
+                    "mentionable": false
+                },
+                {
+                    "id": "1297138129920196639",
+                    "name": "Super-Admin",
+                    "color": 10181046,
+                    "hoist": true,
+                    "position": 26,
+                    "permissions": 8,
+                    "mentionable": false
+                }
+            ]
+        }
+    },
+    "trust_score_enabled": true,
+    "user_trust_scores": {
+        "1103587930569723924": {
+            "score": 60,
+            "join_date": 1746064630.386587
+        }
+    },
+    "minimum_account_age": 7
+}

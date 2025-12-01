@@ -1,0 +1,53 @@
+2025-11-18 01:15:46 | INFO | voice_channels | ✅ 2 salons chargés
+2025-11-18 01:15:46 | INFO | voice_channels | ✅ Configuration chargée
+2025-11-18 01:15:46 | INFO | voice_channels | 🧹 Salon 1383550626843066510 supprimé
+2025-11-18 01:15:55 | INFO | voice_channels | ✅ Salon créé: 🏝️ Keywan par favonius_key
+2025-11-18 01:16:37 | ERROR | voice_channels | Erreur suppression: 404 Not Found (error code: 10008): Unknown Message
+Traceback (most recent call last):
+  File "/home/container/cogs/voice_channel.py", line 1226, in delete_voice_channel
+    await interaction.edit_original_response(content="✅ Salon supprimé")
+  File "/home/container/.local/lib/python3.12/site-packages/discord/interactions.py", line 569, in edit_original_response
+    data = await adapter.edit_original_interaction_response(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/container/.local/lib/python3.12/site-packages/discord/webhook/async_.py", line 224, in request
+    raise NotFound(response, data)
+discord.errors.NotFound: 404 Not Found (error code: 10008): Unknown Message
+2025-11-18 01:19:48 | INFO | voice_channels | ✅ 1 salons chargés
+2025-11-18 01:19:48 | INFO | voice_channels | ✅ Configuration chargée
+2025-11-18 01:19:54 | INFO | voice_channels | ✅ Salon créé: 🏝️ Keywan par favonius_key
+2025-11-18 01:21:59 | INFO | voice_channels | ✅ Salon 1440149483559194624 supprimé par favonius_key
+2025-11-18 01:24:53 | INFO | voice_channels | ✅ 1 salons chargés
+2025-11-18 01:24:53 | INFO | voice_channels | ✅ Configuration chargée
+2025-11-18 01:25:04 | INFO | voice_channels | ✅ Salon créé: 🏝️ Keywan par favonius_key
+2025-11-18 01:25:54 | INFO | voice_channels | 🧹 Salon 🏝️ 354 supprimé (vide)
+2025-11-18 01:25:57 | INFO | voice_channels | ✅ Salon créé: 🏝️ Walid par skyneff
+2025-11-18 01:26:03 | INFO | voice_channels | ✅ Salon 1440151006431285248 supprimé par skyneff
+2025-11-18 01:26:03 | ERROR | voice_channels | Erreur suppression auto: 404 Not Found (error code: 10003): Unknown Channel
+2025-11-18 01:26:15 | INFO | voice_channels | ✅ Salon créé: 🏝️ Alex par __panoramix__
+2025-11-18 01:26:22 | INFO | voice_channels | ✅ Salon créé: 🏝️ Walid par skyneff
+2025-11-18 01:26:26 | INFO | voice_channels | 🧹 Salon 🏝️ Walid supprimé (dernier membre parti)
+2025-11-18 01:26:28 | INFO | voice_channels | ✅ Salon créé: 🏝️ Walid par skyneff
+2025-11-18 01:26:54 | INFO | voice_channels | 🧹 Salon 🏝️ Alex supprimé (vide)
+2025-11-18 01:26:54 | INFO | voice_channels | 🧹 Salon 1440151137612464319 supprimé (inexistant)
+2025-11-18 01:26:54 | INFO | voice_channels | 🧹 Salon 🏝️ Walid supprimé (dernier membre parti)
+2025-11-18 01:27:10 | INFO | voice_channels | ✅ Salon créé: 🏝️ Keywan par favonius_key
+2025-11-18 01:27:29 | INFO | voice_channels | ✅ Salon 1440151311969423512 supprimé par favonius_key
+2025-11-18 01:42:20 | INFO | voice_channels | 🧹 Salon 🏝️ Salon de Walid supprimé (dernier membre parti)
+2025-11-18 01:42:29 | INFO | voice_channels | ✅ Salon créé: 🏝️ Walid par skyneff
+2025-11-18 01:42:31 | INFO | voice_channels | 🧹 Salon 🏝️ Walid supprimé (dernier membre parti)
+2025-11-18 21:03:31 | INFO | voice_channels | ✅ Salon créé: 🏝️ Keywan par favonius_key
+2025-11-18 22:47:17 | INFO | voice_channels | 🧹 Salon 🏝️ Keywan supprimé (dernier membre parti)
+2025-11-19 22:49:12 | INFO | voice_channels | ✅ 0 salons chargés
+2025-11-19 22:49:12 | INFO | voice_channels | ✅ Configuration chargée
+2025-11-19 23:01:03 | INFO | voice_channels | ✅ 0 salons chargés
+2025-11-19 23:01:03 | INFO | voice_channels | ✅ Configuration chargée
+2025-11-20 18:31:12 | INFO | voice_channels | ✅ Salon créé: 🏝️ Keywan par favonius_key
+2025-11-20 18:31:15 | INFO | voice_channels | 🧹 Salon 🏝️ Keywan supprimé (dernier membre parti)
+2025-11-21 23:33:49 | INFO | voice_channels | ✅ Salon créé: 🏝️ Alex par __panoramix__
+2025-11-21 23:34:04 | INFO | voice_channels | 🧹 Salon 🏝️ Alex supprimé (vide)
+2025-11-27 00:33:58 | INFO | voice_channels | ✅ Salon créé: 🏝️ Alex par __panoramix__
+2025-11-27 00:34:01 | INFO | voice_channels | ✅ Salon créé: 🏝️ Yann par yanounou77340
+2025-11-27 00:35:03 | INFO | voice_channels | 🧹 Salon 1443399396849877114 supprimé (inexistant)
+2025-11-27 01:42:51 | INFO | voice_channels | 🧹 Salon 🏝️ Yann supprimé (dernier membre parti)
+2025-11-30 21:34:45 | INFO | voice_channels | ✅ 0 salons chargés
+2025-11-30 21:34:45 | INFO | voice_channels | ✅ Configuration chargée

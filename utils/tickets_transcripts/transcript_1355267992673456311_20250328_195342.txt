@@ -1,0 +1,23 @@
+=== TRANSCRIPTION TICKET SUPPORT ===
+ID: 1355267992673456311
+Créé par: 595343318779428874
+Date: 28/03/2025 19:51:09
+==================================================
+
+[28/03/2025 19:51:09] Antilles - Outre Mer: <@595343318779428874> <@&1297138129920196639> <@&1297148016725332068>
+[28/03/2025 19:51:09] Antilles - Outre Mer: [Embed ou contenu spécial]
+[28/03/2025 19:51:15] favonius_key: test
+[28/03/2025 19:51:17] favonius_key: etst
+[28/03/2025 19:51:18] favonius_key: etste
+[28/03/2025 19:51:19] favonius_key: ets e
+[28/03/2025 19:51:23] Antilles - Outre Mer: [Embed ou contenu spécial]
+[28/03/2025 19:51:24] Antilles - Outre Mer: ✅ Ticket fermé.
+[28/03/2025 19:51:26] Antilles - Outre Mer: [Embed ou contenu spécial]
+[28/03/2025 19:51:29] Antilles - Outre Mer: 📝 Création de la transcription en cours...
+[28/03/2025 19:51:30] Antilles - Outre Mer: ✅ La transcription a été envoyée en message privé à <@595343318779428874>.
+[28/03/2025 19:51:33] Antilles - Outre Mer: ✅ Ticket réouvert.
+[28/03/2025 19:52:23] Antilles - Outre Mer: [Embed ou contenu spécial]
+[28/03/2025 19:52:38] Antilles - Outre Mer: [Embed ou contenu spécial]
+[28/03/2025 19:52:39] Antilles - Outre Mer: ✅ Ticket réouvert.
+[28/03/2025 19:53:28] Antilles - Outre Mer: [Embed ou contenu spécial]
+[28/03/2025 19:53:38] Antilles - Outre Mer: ⚠️ Êtes-vous sûr de vouloir supprimer ce ticket ? Cette action est irréversible.

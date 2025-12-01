@@ -1,0 +1,10 @@
+{
+  "batch_recovery": {
+    "current_period": "2022-10",
+    "completed": 9,
+    "total": 10,
+    "status": "processing",
+    "timestamp": "2025-09-28T19:47:56.609208",
+    "last_update": 1759088876.6092286
+  }
+}
