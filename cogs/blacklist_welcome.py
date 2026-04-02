@@ -49,7 +49,7 @@ class BlacklistWelcomeSystem(commands.Cog):
                 "welcome_channel_id": 1228477224349339658,
                 "rules_channel_id": 1228454190981054585,
                 "presentation_channel_id": 1228669909249294367,
-                "logo_path": "/home/container/xmas-logo.png",
+                "logo_path": "/home/container/logo.png",
                 "enabled": True,
                 "ban_on_blacklist": True
             }
@@ -59,7 +59,7 @@ class BlacklistWelcomeSystem(commands.Cog):
                 "welcome_channel_id": 1228477224349339658,
                 "rules_channel_id": 1228454190981054585,
                 "presentation_channel_id": 1228669909249294367,
-                "logo_path": "/home/container/xmas-logo.png",
+                "logo_path": "/home/container/logo.png",
                 "enabled": True,
                 "ban_on_blacklist": True
             }
@@ -555,10 +555,10 @@ Bons vols ! ✈️
             # Vérifier le logo
             logo_path = self.welcome_config.get("logo_path")
             if logo_path and os.path.exists(logo_path):
-                logo = discord.File(logo_path, filename="xmas-logo.png")
-                embed.set_thumbnail(url="attachment://xmas-logo.png")
-                embed.set_author(name="Les Antilles - OM", icon_url="attachment://xmas-logo.png")
-                embed.set_footer(text="Bienvenue !", icon_url="attachment://xmas-logo.png")
+                logo = discord.File(logo_path, filename="logo.png")
+                embed.set_thumbnail(url="attachment://logo.png")
+                embed.set_author(name="Les Antilles - OM", icon_url="attachment://logo.png")
+                embed.set_footer(text="Bienvenue !", icon_url="attachment://logo.png")
                 await welcome_channel.send(file=logo, embed=embed)
             else:
                 embed.set_footer(text="Bienvenue !")

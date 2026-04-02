@@ -194,7 +194,7 @@ class RegionMessageManager:
             return None
             
         except discord.Forbidden:
-            print(f"❌ Pas d'autorisation pour le message {self.message_id} ({self.region})")
+            print(f"❌ Aucune autorisation pour le message {self.message_id} ({self.region})")
             return None
             
         except Exception as e:

@@ -226,7 +226,7 @@ async def on_ready():
             "cogs.moderation",
             "cogs.help",
             "cogs.monitoring",
-            "cogs.embedmodal",
+            "cogs.embed_modal",
             "cogs.booking_system",
             "cogs.aviation",
             "cogs.fun",
