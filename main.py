@@ -229,7 +229,7 @@ async def on_ready():
             "cogs.embed_modal",
             "cogs.booking_system",
             "cogs.aviation",
-            "cogs.reaction_roles"
+            "cogs.reaction_roles",
             "cogs.fun",
             "cogs.blacklist_welcome",
             "cogs.tickets",
