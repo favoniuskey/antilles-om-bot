@@ -1,293 +1,949 @@
 import discord
 from discord.ext import commands
-from discord import app_commands
-import asyncio
 import json
 import os
 import logging
-from datetime import datetime
-from dotenv import load_dotenv
+from typing import Optional, Dict, Any, List
 
-# Configuration du logging
-logging.basicConfig(level=logging.INFO,
-                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                    handlers=[logging.StreamHandler()])
-logger = logging.getLogger('discord_bot')
+logger = logging.getLogger("reaction_roles")
 
-# Chargement des variables d'environnement
-load_dotenv()
-TOKEN = os.getenv("DISCORD_TOKEN")
-IVAO_API_KEY = os.getenv("IVAO_API_KEY")
+DATA_DIR = "utils/data"
+os.makedirs(DATA_DIR, exist_ok=True)
+CONFIG_FILE = os.path.join(DATA_DIR, "reaction_roles.json")
 
-# Configuration
-GUILD_ID = 1224706989146378371
-ATC_ROLE_ID = 1228450258254827691
-ADMIN_ROLES = [1297138129920196639, 1297148016725332068, 1309969291822760038]
-ATC_CATEGORY_ID = 1313797047844995093
-SUPPORT_CATEGORY_ID = 1313796797562490902
+# ID super-admin autorisé à poser le panneau
+OWNER_ID = 123456789012345678  # <-- à remplacer par ton ID
 
-# Configuration du bot
-intents = discord.Intents.default()
-intents.members = True
-intents.message_content = True
-intents.guilds = True
-intents.presences = True
 
-bot = commands.Bot(
-    command_prefix='!', 
-    intents=intents, 
-    activity=discord.Game(name="!aide -- Assistance, Monitoring et Tickets"),
-    reconnect=True,
-    auto_sync_commands=False
-)
-
-# ========== SYSTÈME DE RELOAD DE COGS ==========
-
-@bot.command(name="reload", hidden=True)
-@commands.has_any_role(*ADMIN_ROLES)
-async def reload_cog(ctx, cog_name: str = None):
-    """Recharge un cog ou tous les cogs."""
+def load_config() -> Dict[str, Any]:
+    if not os.path.isfile(CONFIG_FILE):
+        return {"reaction_roles": [], "role_menus": []}
     try:
-        await ctx.message.delete()
-
-        if cog_name is None:
-            reloaded = []
-            failed = []
-
-            for cog in list(bot.extensions.keys()):
-                try:
-                    await bot.reload_extension(cog)
-                    reloaded.append(cog)
-                    logger.info(f"🔄 Cog rechargé: {cog}")
-                except Exception as e:
-                    failed.append(f"{cog}: {str(e)[:50]}")
-                    logger.error(f"❌ Erreur reload {cog}: {e}")
-
-            message = f"✅ Rechargement complet\n"
-            message += f"OK: {len(reloaded)}\n"
-            if failed:
-                message += f"Erreurs: {len(failed)}"
-
-            confirmation = await ctx.send(message)
-            await asyncio.sleep(10)
-            await confirmation.delete()
-        else:
-            cog_path = f"cogs.{cog_name}"
-            try:
-                await bot.reload_extension(cog_path)
-                confirmation = await ctx.send(f"✅ **{cog_name}** rechargé!")
-                logger.info(f"🔄 {cog_path} rechargé")
-                await asyncio.sleep(5)
-                await confirmation.delete()
-            except Exception as e:
-                error_msg = await ctx.send(f"❌ Erreur **{cog_name}**: {str(e)[:80]}")
-                logger.error(f"❌ {e}")
-                await asyncio.sleep(5)
-                await error_msg.delete()
+        with open(CONFIG_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
     except Exception as e:
-        logger.error(f"❌ reload_cog: {e}")
+        logger.error(f"Erreur lecture {CONFIG_FILE}: {e}")
+        return {"reaction_roles": [], "role_menus": []}
 
-@bot.command(name="load", hidden=True)
-@commands.has_any_role(*ADMIN_ROLES)
-async def load_cog(ctx, cog_name: str):
-    """Charge un nouveau cog."""
+
+def save_config(cfg: Dict[str, Any]) -> None:
     try:
-        await ctx.message.delete()
-        cog_path = f"cogs.{cog_name}"
+        with open(CONFIG_FILE, "w", encoding="utf-8") as f:
+            json.dump(cfg, f, ensure_ascii=False, indent=2)
+    except Exception as e:
+        logger.error(f"Erreur écriture {CONFIG_FILE}: {e}")
 
+
+class ReactionRolesCog(commands.Cog):
+    """
+    Gestion des rôles par réactions ET par menu déroulant,
+    avec un panneau de gestion central.
+    """
+
+    def __init__(self, bot: commands.Bot):
+        self.bot = bot
+        self.config: Dict[str, Any] = load_config()
+
+    # ========== OUTILS CONFIG ==========
+
+    def save(self):
+        save_config(self.config)
+
+    def find_reaction_entry(self, message_id: int, emoji_str: str) -> Optional[Dict[str, Any]]:
+        for entry in self.config.get("reaction_roles", []):
+            if entry["message_id"] == message_id and entry["emoji"] == emoji_str:
+                return entry
+        return None
+
+    def is_owner_ctx(self, ctx: commands.Context) -> bool:
+        return ctx.author.id == OWNER_ID or ctx.author.guild_permissions.administrator
+
+    # ========== PANNEAU DE GESTION ==========
+
+    @commands.command(name="rr_panel")
+    async def rr_panel(self, ctx: commands.Context):
+        """Crée le panneau de gestion des rôles (réactions + menus)."""
+        if not self.is_owner_ctx(ctx):
+            await ctx.send("Tu n'es pas autorisé à créer ce panneau.", delete_after=10)
+            return
+
+        view = ReactionPanelView(self)
+        embed = discord.Embed(
+            title="Panneau de gestion des rôles",
+            description=(
+                "Utilisez les boutons ci-dessous pour configurer les rôles :\n"
+                "- Créer un reaction-role sur un message\n"
+                "- Créer un menu déroulant de rôles\n"
+                "- Ajouter un rôle à un menu existant\n"
+                "- Lister les configurations"
+            ),
+            color=discord.Color.blurple(),
+        )
+        await ctx.send(embed=embed, view=view)
+
+    # ========== COMMANDES TEXTE (BACKUP / AVANCÉ) ==========
+
+    @commands.group(name="rr", invoke_without_command=True)
+    @commands.has_permissions(manage_roles=True)
+    async def rr_group(self, ctx: commands.Context):
+        await ctx.send(
+            "Sous-commandes disponibles :\n"
+            "- `!rr add <message_id> <emoji> <@role>`\n"
+            "- `!rr remove <message_id> <emoji>`\n"
+            "- `!rr list`",
+            delete_after=15,
+        )
+
+    @rr_group.command(name="add")
+    @commands.has_permissions(manage_roles=True)
+    async def rr_add(self, ctx: commands.Context, message_id: int, emoji: str, role: discord.Role):
+        await ctx.message.delete()
+
+        emoji_str = emoji
+        if self.find_reaction_entry(message_id, emoji_str):
+            await ctx.send("Cette combinaison message/emoji existe déjà.", delete_after=10)
+            return
+
+        self.config.setdefault("reaction_roles", []).append(
+            {
+                "guild_id": ctx.guild.id,
+                "channel_id": ctx.channel.id,
+                "message_id": message_id,
+                "emoji": emoji_str,
+                "role_id": role.id,
+            }
+        )
+        self.save()
+
+        # On tente d'ajouter la réaction pour toi
         try:
-            await bot.load_extension(cog_path)
-            confirmation = await ctx.send(f"✅ **{cog_name}** chargé!")
-            logger.info(f"📦 {cog_path} chargé")
-            await asyncio.sleep(5)
-            await confirmation.delete()
+            msg = await ctx.channel.fetch_message(message_id)
+            await msg.add_reaction(emoji_str)
         except Exception as e:
-            error_msg = await ctx.send(f"❌ Erreur **{cog_name}**: {str(e)[:80]}")
-            logger.error(f"❌ {e}")
-            await asyncio.sleep(5)
-            await error_msg.delete()
-    except Exception as e:
-        logger.error(f"❌ load_cog: {e}")
+            logger.warning(f"Impossible d'ajouter la réaction automatiquement: {e}")
 
-@bot.command(name="unload", hidden=True)
-@commands.has_any_role(*ADMIN_ROLES)
-async def unload_cog(ctx, cog_name: str):
-    """Décharge un cog."""
-    try:
+        await ctx.send(
+            f"Reaction-role ajouté : message `{message_id}`, emoji `{emoji_str}`, rôle {role.mention}.",
+            delete_after=10,
+        )
+
+    @rr_group.command(name="remove")
+    @commands.has_permissions(manage_roles=True)
+    async def rr_remove(self, ctx: commands.Context, message_id: int, emoji: str):
         await ctx.message.delete()
-        cog_path = f"cogs.{cog_name}"
 
-        try:
-            await bot.unload_extension(cog_path)
-            confirmation = await ctx.send(f"✅ **{cog_name}** déchargé!")
-            logger.info(f"🗑️ {cog_path} déchargé")
-            await asyncio.sleep(5)
-            await confirmation.delete()
-        except Exception as e:
-            error_msg = await ctx.send(f"❌ Erreur **{cog_name}**: {str(e)[:80]}")
-            logger.error(f"❌ {e}")
-            await asyncio.sleep(5)
-            await error_msg.delete()
-    except Exception as e:
-        logger.error(f"❌ unload_cog: {e}")
-
-# ========== ÉVÉNEMENTS ==========
-
-@bot.event
-async def on_command(ctx):
-    """Supprime le message de commande."""
-    try:
-        await ctx.message.delete()
-    except (discord.Forbidden, discord.NotFound):
-        pass
-
-@bot.event
-async def on_command_error(ctx, error):
-    """Gestion des erreurs."""
-    try:
-        await ctx.message.delete()
-    except (discord.errors.NotFound, discord.errors.Forbidden):
-        pass
-
-    if isinstance(error, commands.MissingPermissions):
-        message = await ctx.send("❌ Tu n'as pas les permissions")
-    elif isinstance(error, commands.MissingRequiredArgument):
-        message = await ctx.send("❌ Il manque un argument")
-    elif isinstance(error, commands.BadArgument):
-        message = await ctx.send("❌ Argument invalide")
-    elif isinstance(error, commands.CommandNotFound):
-        message = await ctx.send("❌ Commande non trouvée")
-    else:
-        logger.error(f"❌ Erreur: {error}", exc_info=True)
-        message = await ctx.send("❌ Une erreur s'est produite")
-
-    try:
-        await message.delete(delay=5)
-    except:
-        pass
-
-@bot.command(name="syncsrv", hidden=True)
-@commands.has_any_role(*ADMIN_ROLES)
-async def sync_server_command(ctx):
-    """Synchronise les commandes slash."""
-    try:
-        await ctx.message.delete()
-        guild = discord.Object(id=GUILD_ID)
-        synced = await bot.tree.sync(guild=guild)
-        confirmation = await ctx.send(f"✅ {len(synced)} commandes synchronisées")
-        logger.info(f"Commandes sync: {len(synced)}")
-        await asyncio.sleep(5)
-        await confirmation.delete()
-    except Exception as e:
-        logger.error(f"❌ Erreur sync: {e}")
-
-@bot.command(name="syncall", hidden=True)
-@commands.has_any_role(*ADMIN_ROLES)
-async def sync_global_command(ctx):
-    """Synchronise globalement."""
-    try:
-        await ctx.message.delete()
-        synced = await bot.tree.sync()
-        confirmation = await ctx.send(f"✅ {len(synced)} commandes globales")
-        logger.info(f"Sync global: {len(synced)}")
-        await asyncio.sleep(5)
-        await confirmation.delete()
-    except Exception as e:
-        logger.error(f"❌ Erreur sync: {e}")
-
-@bot.command(name="cogstatus", hidden=True)
-@commands.has_any_role(*ADMIN_ROLES)
-async def cog_status(ctx):
-    """État des cogs."""
-    try:
-        await ctx.message.delete()
-        loaded_cogs = list(bot.extensions.keys())
-        commands_list = [cmd.name for cmd in bot.tree.get_commands()]
-
-        status = f"**Cogs ({len(loaded_cogs)})**: " + ", ".join(loaded_cogs[:5])
-        status += f"\n**Commandes ({len(commands_list)})**: " + ", ".join(sorted(commands_list)[:10])
-
-        await ctx.send(status)
-    except Exception as e:
-        logger.error(f"❌ Erreur: {e}")
-
-@bot.event
-async def on_ready():
-    """Démarrage du bot."""
-    logger.info(f"🤖 Bot connecté: {bot.user}")
-
-    if not TOKEN:
-        logger.critical("❌ DISCORD_TOKEN manquant")
-    if not IVAO_API_KEY:
-        logger.warning("⚠️ IVAO_API_KEY manquante (necessaire pour l'API)")
-
-    try:
-        cogs_to_load = [
-            "cogs.moderation",
-            "cogs.help",
-            "cogs.monitoring",
-            "cogs.embed_modal",
-            "cogs.booking_system",
-            "cogs.aviation",
-            "cogs.reaction_roles",
-            "cogs.fun",
-            "cogs.blacklist_welcome",
-            "cogs.tickets",
-            "cogs.voice_channel",
-            "cogs.birthday",
-            "cogs.server_dump",
-            "cogs.RoleManager",
-            "cogs.pilot_stats",
-            "cogs.atc_stats"
+        before = len(self.config.get("reaction_roles", []))
+        self.config["reaction_roles"] = [
+            e for e in self.config.get("reaction_roles", [])
+            if not (e["message_id"] == message_id and e["emoji"] == emoji)
         ]
+        after = len(self.config["reaction_roles"])
+        self.save()
 
-        for cog in cogs_to_load:
+        if before == after:
+            await ctx.send("Aucune entrée trouvée pour ce message/emoji.", delete_after=10)
+        else:
+            await ctx.send("Reaction-role supprimé.", delete_after=10)
+
+    @rr_group.command(name="list")
+    @commands.has_permissions(manage_roles=True)
+    async def rr_list(self, ctx: commands.Context):
+        entries = [
+            e for e in self.config.get("reaction_roles", [])
+            if e["guild_id"] == ctx.guild.id
+        ]
+        if not entries:
+            await ctx.send("Aucun reaction-role configuré sur ce serveur.")
+            return
+
+        lines = []
+        for e in entries[:20]:
+            role = ctx.guild.get_role(e["role_id"])
+            lines.append(
+                f"- message `{e['message_id']}`, emoji `{e['emoji']}`, rôle: {role.mention if role else e['role_id']}"
+            )
+
+        if len(entries) > 20:
+            lines.append(f"... ({len(entries) - 20} de plus)")
+
+        await ctx.send("\n".join(lines))
+
+    # ========== EVENTS REACTION ==========
+
+    @commands.Cog.listener()
+    async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent):
+        """Donne un rôle quand quelqu'un réagit avec un emoji configuré."""
+        if payload.guild_id is None:
+            return
+        if payload.user_id == self.bot.user.id:
+            return
+
+        emoji_str = str(payload.emoji)
+        entry = self.find_reaction_entry(payload.message_id, emoji_str)
+        if not entry:
+            return
+
+        guild = self.bot.get_guild(payload.guild_id)
+        if not guild:
+            return
+
+        member = guild.get_member(payload.user_id)
+        if not member:
+            return
+
+        role = guild.get_role(entry["role_id"])
+        if not role:
+            return
+
+        try:
+            if role not in member.roles:
+                await member.add_roles(role, reason="Reaction role ajout")
+        except discord.Forbidden:
+            logger.warning(f"Pas la permission d'ajouter {role} à {member}")
+        except discord.HTTPException as e:
+            logger.error(f"Erreur add_roles: {e}")
+
+    @commands.Cog.listener()
+    async def on_raw_reaction_remove(self, payload: discord.RawReactionActionEvent):
+        """Retire le rôle quand quelqu'un retire sa réaction."""
+        if payload.guild_id is None:
+            return
+        if payload.user_id == self.bot.user.id:
+            return
+
+        emoji_str = str(payload.emoji)
+        entry = self.find_reaction_entry(payload.message_id, emoji_str)
+        if not entry:
+            return
+
+        guild = self.bot.get_guild(payload.guild_id)
+        if not guild:
+            return
+
+        member = guild.get_member(payload.user_id)
+        if not member:
+            return
+
+        role = guild.get_role(entry["role_id"])
+        if not role:
+            return
+
+        try:
+            if role in member.roles:
+                await member.remove_roles(role, reason="Reaction role retrait")
+        except discord.Forbidden:
+            logger.warning(f"Pas la permission de retirer {role} à {member}")
+        except discord.HTTPException as e:
+            logger.error(f"Erreur remove_roles: {e}")
+
+    # ========== ROLE MENUS (SELECT) ==========
+
+    @commands.group(name="rolemenu", invoke_without_command=True)
+    @commands.has_permissions(manage_roles=True)
+    async def rolemenu_group(self, ctx: commands.Context):
+        await ctx.send(
+            "Sous-commandes :\n"
+            "- `!rolemenu create <titre> <#salon> [max_values]`\n"
+            "- `!rolemenu addrole <menu_id> <@role> [emoji] [label]`",
+            delete_after=20,
+        )
+
+    @rolemenu_group.command(name="create")
+    @commands.has_permissions(manage_roles=True)
+    async def rolemenu_create(
+        self,
+        ctx: commands.Context,
+        titre: str,
+        channel: discord.TextChannel,
+        max_values: Optional[int] = 1,
+    ):
+        await ctx.message.delete()
+
+        menu_id = f"{ctx.guild.id}-{ctx.channel.id}-{ctx.message.id}"
+
+        embed = discord.Embed(
+            title=titre,
+            description="Sélectionnez les rôles désirés dans le menu ci-dessous.",
+            color=discord.Color.blurple(),
+        )
+        msg = await channel.send(embed=embed)
+
+        menu_entry = {
+            "id": menu_id,
+            "guild_id": ctx.guild.id,
+            "channel_id": channel.id,
+            "message_id": msg.id,
+            "placeholder": "Choisissez vos rôles",
+            "max_values": max_values,
+            "roles": [],
+        }
+
+        self.config.setdefault("role_menus", []).append(menu_entry)
+        self.save()
+
+        await ctx.send(
+            f"Menu de rôles créé avec ID `{menu_id}`. "
+            f"Ajoutez des rôles avec `!rolemenu addrole {menu_id} @role [emoji] [label]`.",
+            delete_after=20,
+        )
+
+    @rolemenu_group.command(name="addrole")
+    @commands.has_permissions(manage_roles=True)
+    async def rolemenu_addrole(
+        self,
+        ctx: commands.Context,
+        menu_id: str,
+        role: discord.Role,
+        emoji: Optional[str] = None,
+        *,
+        label: Optional[str] = None,
+    ):
+        await ctx.message.delete()
+
+        menu = next((m for m in self.config.get("role_menus", []) if m["id"] == menu_id), None)
+        if not menu:
+            await ctx.send("Menu introuvable. Vérifie l'ID.", delete_after=10)
+            return
+
+        menu["roles"].append(
+            {
+                "role_id": role.id,
+                "emoji": emoji,
+                "label": label or role.name,
+                "description": None,
+            }
+        )
+        self.save()
+
+        guild = ctx.guild
+        channel = guild.get_channel(menu["channel_id"])
+        if not isinstance(channel, discord.TextChannel):
+            await ctx.send("Salon du menu introuvable.", delete_after=10)
+            return
+
+        try:
+            msg = await channel.fetch_message(menu["message_id"])
+        except discord.NotFound:
+            await ctx.send("Message du menu introuvable.", delete_after=10)
+            return
+
+        view = RoleSelectView(self, menu_id)
+        await msg.edit(view=view)
+
+        await ctx.send(
+            f"Rôle {role.mention} ajouté au menu `{menu_id}`.",
+            delete_after=10,
+        )
+
+
+# ========== VUES & MODALS ==========
+
+
+class ReactionPanelView(discord.ui.View):
+    """Panneau principal de gestion (persistant)."""
+
+    def __init__(self, cog: ReactionRolesCog):
+        super().__init__(timeout=None)
+        self.cog = cog
+
+    def user_allowed(self, member: discord.Member) -> bool:
+        return member.guild_permissions.manage_roles
+
+    @discord.ui.button(
+        label="Créer reaction-role",
+        style=discord.ButtonStyle.primary,
+        custom_id="rr:create_rr",
+    )
+    async def create_rr_button(
+        self, interaction: discord.Interaction, button: discord.ui.Button
+    ):
+        if not self.user_allowed(interaction.user):
+            await interaction.response.send_message(
+                "Tu n'as pas la permission de gérer les rôles.",
+                ephemeral=True,
+            )
+            return
+
+        modal = CreateReactionRoleModal(self.cog)
+        await interaction.response.send_modal(modal)
+
+    @discord.ui.button(
+        label="Créer menu de rôles",
+        style=discord.ButtonStyle.success,
+        custom_id="rr:create_menu",
+    )
+    async def create_menu_button(
+        self, interaction: discord.Interaction, button: discord.ui.Button
+    ):
+        if not self.user_allowed(interaction.user):
+            await interaction.response.send_message(
+                "Tu n'as pas la permission de gérer les rôles.",
+                ephemeral=True,
+            )
+            return
+
+        modal = CreateRoleMenuModal(self.cog)
+        await interaction.response.send_modal(modal)
+
+    @discord.ui.button(
+        label="Ajouter rôle à un menu",
+        style=discord.ButtonStyle.secondary,
+        custom_id="rr:addrole_menu",
+    )
+    async def addrole_menu_button(
+        self, interaction: discord.Interaction, button: discord.ui.Button
+    ):
+        if not self.user_allowed(interaction.user):
+            await interaction.response.send_message(
+                "Tu n'as pas la permission de gérer les rôles.",
+                ephemeral=True,
+            )
+            return
+
+        modal = AddRoleToMenuModal(self.cog)
+        await interaction.response.send_modal(modal)
+
+    @discord.ui.button(
+        label="Lister configs",
+        style=discord.ButtonStyle.secondary,
+        custom_id="rr:list_configs",
+    )
+    async def list_configs_button(
+        self, interaction: discord.Interaction, button: discord.ui.Button
+    ):
+        if not self.user_allowed(interaction.user):
+            await interaction.response.send_message(
+                "Tu n'as pas la permission de gérer les rôles.",
+                ephemeral=True,
+            )
+            return
+
+        cfg = self.cog.config
+        rr_count = len(cfg.get("reaction_roles", []))
+        menu_count = len(cfg.get("role_menus", []))
+
+        text = (
+            f"Reaction-roles configurés : {rr_count}\n"
+            f"Menus de rôles configurés : {menu_count}"
+        )
+        await interaction.response.send_message(text, ephemeral=True)
+
+
+class CreateReactionRoleModal(discord.ui.Modal, title="Créer un reaction-role"):
+    def __init__(self, cog: ReactionRolesCog):
+        super().__init__()
+        self.cog = cog
+
+        self.channel_input = discord.ui.TextInput(
+            label="Salon (mention ou ID, vide = salon du message)",
+            required=False,
+            placeholder="#règlement ou ID",
+        )
+        self.add_item(self.channel_input)
+
+        self.message_input = discord.ui.TextInput(
+            label="ID ou URL du message",
+            required=True,
+            placeholder="1234567890 ou https://discord.com/channels/...",
+        )
+        self.add_item(self.message_input)
+
+        self.emoji_input = discord.ui.TextInput(
+            label="Emoji",
+            required=True,
+            placeholder="✅",
+        )
+        self.add_item(self.emoji_input)
+
+        self.role_input = discord.ui.TextInput(
+            label="Rôle (mention ou ID)",
+            required=True,
+            placeholder="@Membre ou 1234567890",
+        )
+        self.add_item(self.role_input)
+
+    async def on_submit(self, interaction: discord.Interaction):
+        guild = interaction.guild
+        if guild is None:
+            await interaction.response.send_message(
+                "Action indisponible en message privé.",
+                ephemeral=True,
+            )
+            return
+
+        # Channel
+        raw_channel = self.channel_input.value.strip()
+        channel: discord.TextChannel
+        if not raw_channel:
+            channel = interaction.channel  # type: ignore
+        else:
+            channel = None
+            if raw_channel.startswith("<#") and raw_channel.endswith(">"):
+                try:
+                    cid = int(raw_channel[2:-1])
+                    c = guild.get_channel(cid)
+                    if isinstance(c, discord.TextChannel):
+                        channel = c
+                except ValueError:
+                    pass
+            if channel is None:
+                try:
+                    cid = int(raw_channel)
+                    c = guild.get_channel(cid)
+                    if isinstance(c, discord.TextChannel):
+                        channel = c
+                except ValueError:
+                    pass
+
+        if channel is None:
+            await interaction.response.send_message(
+                "Salon invalide.",
+                ephemeral=True,
+            )
+            return
+
+        # Message
+        raw_msg = self.message_input.value.strip()
+        message_id = None
+        if "discord.com/channels/" in raw_msg:
             try:
-                await bot.load_extension(cog)
-                logger.info(f"✅ Cog chargé: {cog}")
-            except Exception as e:
-                logger.error(f"❌ Erreur {cog}: {e}")
+                parts = raw_msg.split("/")
+                message_id = int(parts[-1])
+                chan_id = int(parts[-2])
+                chan = guild.get_channel(chan_id)
+                if isinstance(chan, discord.TextChannel):
+                    channel = chan
+            except Exception:
+                await interaction.response.send_message(
+                    "URL de message invalide.",
+                    ephemeral=True,
+                )
+                return
+        else:
+            try:
+                message_id = int(raw_msg)
+            except ValueError:
+                await interaction.response.send_message(
+                    "ID de message invalide.",
+                    ephemeral=True,
+                )
+                return
 
-        await asyncio.sleep(3)
+        # Emoji
+        emoji_str = self.emoji_input.value.strip()
+
+        # Rôle
+        raw_role = self.role_input.value.strip()
+        role = None
+        if raw_role.startswith("<@&") and raw_role.endswith(">"):
+            try:
+                rid = int(raw_role[3:-1])
+                role = guild.get_role(rid)
+            except ValueError:
+                pass
+        if role is None:
+            try:
+                rid = int(raw_role)
+                role = guild.get_role(rid)
+            except ValueError:
+                pass
+        if role is None:
+            role = discord.utils.get(guild.roles, name=raw_role)
+
+        if role is None:
+            await interaction.response.send_message(
+                "Rôle introuvable.",
+                ephemeral=True,
+            )
+            return
+
+        # Enregistrement config
+        if self.cog.find_reaction_entry(message_id, emoji_str):
+            await interaction.response.send_message(
+                "Cette combinaison message/emoji existe déjà.",
+                ephemeral=True,
+            )
+            return
+
+        self.cog.config.setdefault("reaction_roles", []).append(
+            {
+                "guild_id": guild.id,
+                "channel_id": channel.id,
+                "message_id": message_id,
+                "emoji": emoji_str,
+                "role_id": role.id,
+            }
+        )
+        self.cog.save()
+
+        # On tente d'ajouter la réaction
+        try:
+            msg = await channel.fetch_message(message_id)
+            await msg.add_reaction(emoji_str)
+        except Exception as e:
+            logger.warning(f"Impossible d'ajouter la réaction automatiquement: {e}")
+
+        await interaction.response.send_message(
+            f"Reaction-role créé sur le message `{message_id}` avec l'emoji `{emoji_str}` pour le rôle {role.mention}.",
+            ephemeral=True,
+        )
+
+
+class CreateRoleMenuModal(discord.ui.Modal, title="Créer un menu de rôles"):
+    def __init__(self, cog: ReactionRolesCog):
+        super().__init__()
+        self.cog = cog
+
+        self.channel_input = discord.ui.TextInput(
+            label="Salon (mention ou ID, vide = salon actuel)",
+            required=False,
+            placeholder="#roles ou ID",
+        )
+        self.add_item(self.channel_input)
+
+        self.title_input = discord.ui.TextInput(
+            label="Titre du menu",
+            required=True,
+            placeholder="Rôles facultatifs",
+        )
+        self.add_item(self.title_input)
+
+        self.placeholder_input = discord.ui.TextInput(
+            label="Texte du menu (placeholder)",
+            required=False,
+            placeholder="Choisissez vos rôles",
+        )
+        self.add_item(self.placeholder_input)
+
+        self.max_values_input = discord.ui.TextInput(
+            label="Nombre max de rôles sélectionnables (1 par défaut)",
+            required=False,
+            placeholder="1",
+        )
+        self.add_item(self.max_values_input)
+
+    async def on_submit(self, interaction: discord.Interaction):
+        guild = interaction.guild
+        if guild is None:
+            await interaction.response.send_message(
+                "Action indisponible en message privé.",
+                ephemeral=True,
+            )
+            return
+
+        # Channel
+        raw_channel = self.channel_input.value.strip()
+        channel: discord.TextChannel
+        if not raw_channel:
+            channel = interaction.channel  # type: ignore
+        else:
+            channel = None
+            if raw_channel.startswith("<#") and raw_channel.endswith(">"):
+                try:
+                    cid = int(raw_channel[2:-1])
+                    c = guild.get_channel(cid)
+                    if isinstance(c, discord.TextChannel):
+                        channel = c
+                except ValueError:
+                    pass
+            if channel is None:
+                try:
+                    cid = int(raw_channel)
+                    c = guild.get_channel(cid)
+                    if isinstance(c, discord.TextChannel):
+                        channel = c
+                except ValueError:
+                    pass
+
+        if channel is None:
+            await interaction.response.send_message(
+                "Salon invalide.",
+                ephemeral=True,
+            )
+            return
+
+        titre = self.title_input.value.strip()
+        placeholder = self.placeholder_input.value.strip() or "Choisissez vos rôles"
+
+        max_values = 1
+        if self.max_values_input.value.strip():
+            try:
+                max_values = max(1, int(self.max_values_input.value.strip()))
+            except ValueError:
+                pass
+
+        menu_id = f"{guild.id}-{interaction.id}"
+
+        embed = discord.Embed(
+            title=titre,
+            description="Sélectionnez les rôles désirés dans le menu ci-dessous.",
+            color=discord.Color.blurple(),
+        )
+        msg = await channel.send(embed=embed)
+
+        menu_entry = {
+            "id": menu_id,
+            "guild_id": guild.id,
+            "channel_id": channel.id,
+            "message_id": msg.id,
+            "placeholder": placeholder,
+            "max_values": max_values,
+            "roles": [],
+        }
+
+        self.cog.config.setdefault("role_menus", []).append(menu_entry)
+        self.cog.save()
+
+        await interaction.response.send_message(
+            f"Menu de rôles créé avec ID `{menu_id}` dans {channel.mention}.\n"
+            f"Ajoute des rôles avec le bouton 'Ajouter rôle à un menu' ou la commande `!rolemenu addrole`.",
+            ephemeral=True,
+        )
+
+
+class AddRoleToMenuModal(discord.ui.Modal, title="Ajouter un rôle à un menu"):
+    def __init__(self, cog: ReactionRolesCog):
+        super().__init__()
+        self.cog = cog
+
+        self.menu_id_input = discord.ui.TextInput(
+            label="ID du menu",
+            required=True,
+            placeholder="ID donné lors de la création",
+        )
+        self.add_item(self.menu_id_input)
+
+        self.role_input = discord.ui.TextInput(
+            label="Rôle (mention ou ID)",
+            required=True,
+            placeholder="@Membre ou 1234567890",
+        )
+        self.add_item(self.role_input)
+
+        self.emoji_input = discord.ui.TextInput(
+            label="Emoji (optionnel)",
+            required=False,
+            placeholder="✅",
+        )
+        self.add_item(self.emoji_input)
+
+        self.label_input = discord.ui.TextInput(
+            label="Label (optionnel, vide = nom du rôle)",
+            required=False,
+            placeholder="Nom affiché dans le menu",
+        )
+        self.add_item(self.label_input)
+
+    async def on_submit(self, interaction: discord.Interaction):
+        guild = interaction.guild
+        if guild is None:
+            await interaction.response.send_message(
+                "Action indisponible en message privé.",
+                ephemeral=True,
+            )
+            return
+
+        menu_id = self.menu_id_input.value.strip()
+        menu = next((m for m in self.cog.config.get("role_menus", []) if m["id"] == menu_id), None)
+        if not menu:
+            await interaction.response.send_message(
+                "Menu introuvable. Vérifie l'ID.",
+                ephemeral=True,
+            )
+            return
+
+        raw_role = self.role_input.value.strip()
+        role = None
+        if raw_role.startswith("<@&") and raw_role.endswith(">"):
+            try:
+                rid = int(raw_role[3:-1])
+                role = guild.get_role(rid)
+            except ValueError:
+                pass
+        if role is None:
+            try:
+                rid = int(raw_role)
+                role = guild.get_role(rid)
+            except ValueError:
+                pass
+        if role is None:
+            role = discord.utils.get(guild.roles, name=raw_role)
+
+        if role is None:
+            await interaction.response.send_message(
+                "Rôle introuvable.",
+                ephemeral=True,
+            )
+            return
+
+        emoji = self.emoji_input.value.strip() or None
+        label = self.label_input.value.strip() or role.name
+
+        menu["roles"].append(
+            {
+                "role_id": role.id,
+                "emoji": emoji,
+                "label": label,
+                "description": None,
+            }
+        )
+        self.cog.save()
+
+        channel = guild.get_channel(menu["channel_id"])
+        if not isinstance(channel, discord.TextChannel):
+            await interaction.response.send_message(
+                "Salon du menu introuvable (ou non textuel).",
+                ephemeral=True,
+            )
+            return
 
         try:
-            guild = discord.Object(id=GUILD_ID)
-            synced_guild = await bot.tree.sync(guild=guild)
-            logger.info(f"Commandes serveur: {len(synced_guild)}")
-        except Exception as e:
-            logger.error(f"❌ Erreur sync serveur: {e}")
+            msg = await channel.fetch_message(menu["message_id"])
+        except discord.NotFound:
+            await interaction.response.send_message(
+                "Message du menu introuvable.",
+                ephemeral=True,
+            )
+            return
 
-        try:
-            synced_global = await bot.tree.sync()
-            logger.info(f"Commandes globales: {len(synced_global)}")
-        except Exception as e:
-            logger.error(f"❌ Erreur sync global: {e}")
+        view = RoleSelectView(self.cog, menu_id)
+        await msg.edit(view=view)
 
-        commands_list = [cmd.name for cmd in bot.tree.get_commands()]
-        logger.info(f"Total: {len(commands_list)} commandes")
+        await interaction.response.send_message(
+            f"Rôle {role.mention} ajouté au menu `{menu_id}`.",
+            ephemeral=True,
+        )
 
-    except Exception as e:
-        logger.error(f"❌ Erreur initialisation: {e}")
 
-# ========== LANCEMENT ==========
+class RoleSelectView(discord.ui.View):
+    """Vue persistante pour un menu de rôles."""
 
-if __name__ == "__main__":
-    if not TOKEN:
-        logger.critical("❌ DISCORD_TOKEN manquant!")
-        exit(1)
+    def __init__(self, cog: ReactionRolesCog, menu_id: str):
+        super().__init__(timeout=None)
+        self.cog = cog
+        self.menu_id = menu_id
 
-    os.makedirs('cogs', exist_ok=True)
-    os.makedirs('utils/data', exist_ok=True)
-    os.makedirs('utils/logs', exist_ok=True)
+        config = self.cog.config
+        menu = next((m for m in config.get("role_menus", []) if m["id"] == menu_id), None)
+        if not menu:
+            return
 
-    try:
-        logger.info("🚀 Démarrage du bot...")
-        bot.run(TOKEN)
-    except discord.LoginFailure:
-        logger.critical("❌ Token Discord invalide!")
-    except Exception as e:
-        logger.critical(f"❌ Erreur: {e}")
-    finally:
-        import gc
-        gc.collect()
-        logger.info("✅ Bot arrêté")
+        guild = self.cog.bot.get_guild(menu["guild_id"])
+        if not guild:
+            return
+
+        options = []
+        for entry in menu["roles"]:
+            role = guild.get_role(entry["role_id"])
+            if not role:
+                continue
+            label = entry.get("label") or role.name
+            description = entry.get("description") or None
+            emoji = entry.get("emoji") or None
+            options.append(
+                discord.SelectOption(
+                    label=label[:100],
+                    value=str(role.id),
+                    description=(description[:100] if description else None),
+                    emoji=emoji,
+                )
+            )
+
+        if not options:
+            return
+
+        max_values = menu.get("max_values") or 1
+        max_values = min(max_values, len(options))
+
+        select = discord.ui.Select(
+            placeholder=menu.get("placeholder") or "Sélectionnez vos rôles",
+            min_values=0,
+            max_values=max_values,
+            options=options,
+            custom_id=f"role_menu:{menu_id}",
+        )
+        select.callback = self._callback
+        self.add_item(select)
+
+    async def _callback(self, interaction: discord.Interaction):
+        menu = next((m for m in self.cog.config.get("role_menus", []) if m["id"] == self.menu_id), None)
+        if not menu:
+            await interaction.response.send_message(
+                "Ce menu de rôles n'est plus configuré.",
+                ephemeral=True,
+            )
+            return
+
+        guild = interaction.guild
+        if guild is None:
+            await interaction.response.send_message(
+                "Action indisponible en message privé.",
+                ephemeral=True,
+            )
+            return
+
+        member = interaction.user if isinstance(interaction.user, discord.Member) else guild.get_member(interaction.user.id)
+        if member is None:
+            await interaction.response.send_message(
+                "Membre introuvable dans ce serveur.",
+                ephemeral=True,
+            )
+            return
+
+        selected_role_ids = {int(v) for v in interaction.data.get("values", [])}
+        all_role_ids = {int(opt["value"]) for opt in interaction.data["component"]["options"]}
+
+        to_add = selected_role_ids
+        to_remove = all_role_ids - selected_role_ids
+
+        added = []
+        removed = []
+
+        for rid in to_add:
+            role = guild.get_role(rid)
+            if role and role not in member.roles:
+                try:
+                    await member.add_roles(role, reason=f"Role menu {self.menu_id}")
+                    added.append(role.name)
+                except discord.Forbidden:
+                    logger.warning(f"Pas la permission d'ajouter {role} à {member}")
+                except discord.HTTPException as e:
+                    logger.error(f"Erreur add_roles: {e}")
+
+        for rid in to_remove:
+            role = guild.get_role(rid)
+            if role and role in member.roles:
+                try:
+                    await member.remove_roles(role, reason=f"Role menu {self.menu_id}")
+                    removed.append(role.name)
+                except discord.Forbidden:
+                    logger.warning(f"Pas la permission de retirer {role} à {member}")
+                except discord.HTTPException as e:
+                    logger.error(f"Erreur remove_roles: {e}")
+
+        parts = []
+        if added:
+            parts.append("Ajouté : " + ", ".join(added))
+        if removed:
+            parts.append("Retiré : " + ", ".join(removed))
+        if not parts:
+            parts.append("Aucun changement.")
+
+        msg = "\n".join(parts)
+
+        if interaction.response.is_done():
+            await interaction.followup.send(msg, ephemeral=True)
+        else:
+            await interaction.response.send_message(msg, ephemeral=True)
+
+
+async def setup(bot: commands.Bot):
+    cog = ReactionRolesCog(bot)
+    await bot.add_cog(cog)
+
+    # Panneau persistant
+    bot.add_view(ReactionPanelView(cog))
+
+    # Menus de rôles persistants
+    for menu in cog.config.get("role_menus", []):
+        bot.add_view(RoleSelectView(cog, menu["id"]))
