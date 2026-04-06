@@ -3,7 +3,7 @@ from discord.ext import commands
 import json
 import os
 import logging
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict, Any, List, Set
 
 logger = logging.getLogger("reaction_roles")
 
@@ -37,7 +37,7 @@ def save_config(cfg: Dict[str, Any]) -> None:
 class ReactionRolesCog(commands.Cog):
     """
     Gestion des rôles par réactions ET par menu déroulant,
-    avec un panneau de gestion central.
+    avec un panneau de gestion central pour les staffs.
     """
 
     def __init__(self, bot: commands.Bot):
@@ -71,10 +71,10 @@ class ReactionRolesCog(commands.Cog):
         embed = discord.Embed(
             title="Panneau de gestion des rôles",
             description=(
-                "Utilisez les boutons ci-dessous pour configurer les rôles :\n"
+                "Boutons disponibles :\n"
                 "- Créer un reaction-role sur un message\n"
                 "- Créer un menu déroulant de rôles\n"
-                "- Ajouter un rôle à un menu existant\n"
+                "- Configurer les menus de rôles existants\n"
                 "- Lister les configurations"
             ),
             color=discord.Color.blurple(),
@@ -87,7 +87,7 @@ class ReactionRolesCog(commands.Cog):
     @commands.has_permissions(manage_roles=True)
     async def rr_group(self, ctx: commands.Context):
         await ctx.send(
-            "Sous-commandes disponibles :\n"
+            "Sous-commandes :\n"
             "- `!rr add <message_id> <emoji> <@role>`\n"
             "- `!rr remove <message_id> <emoji>`\n"
             "- `!rr list`",
@@ -151,19 +151,35 @@ class ReactionRolesCog(commands.Cog):
             e for e in self.config.get("reaction_roles", [])
             if e["guild_id"] == ctx.guild.id
         ]
-        if not entries:
-            await ctx.send("Aucun reaction-role configuré sur ce serveur.")
+        menus = [
+            m for m in self.config.get("role_menus", [])
+            if m["guild_id"] == ctx.guild.id
+        ]
+
+        if not entries and not menus:
+            await ctx.send("Aucune configuration de rôle sur ce serveur.")
             return
 
         lines = []
-        for e in entries[:20]:
-            role = ctx.guild.get_role(e["role_id"])
-            lines.append(
-                f"- message `{e['message_id']}`, emoji `{e['emoji']}`, rôle: {role.mention if role else e['role_id']}"
-            )
-
-        if len(entries) > 20:
-            lines.append(f"... ({len(entries) - 20} de plus)")
+        if entries:
+            lines.append("Reaction-roles :")
+            for e in entries[:15]:
+                role = ctx.guild.get_role(e["role_id"])
+                lines.append(
+                    f"- msg `{e['message_id']}`, emoji `{e['emoji']}`, rôle: {role.mention if role else e['role_id']}"
+                )
+            if len(entries) > 15:
+                lines.append(f"... ({len(entries) - 15} de plus)")
+        if menus:
+            lines.append("")
+            lines.append("Menus de rôles :")
+            for m in menus[:10]:
+                ch = ctx.guild.get_channel(m["channel_id"])
+                lines.append(
+                    f"- ID `{m['id']}` dans {ch.mention if ch else f'<#{m['channel_id']}>'}, rôles: {len(m['roles'])}"
+                )
+            if len(menus) > 10:
+                lines.append(f"... ({len(menus) - 10} de plus)")
 
         await ctx.send("\n".join(lines))
 
@@ -235,107 +251,8 @@ class ReactionRolesCog(commands.Cog):
         except discord.HTTPException as e:
             logger.error(f"Erreur remove_roles: {e}")
 
-    # ========== ROLE MENUS (SELECT) ==========
 
-    @commands.group(name="rolemenu", invoke_without_command=True)
-    @commands.has_permissions(manage_roles=True)
-    async def rolemenu_group(self, ctx: commands.Context):
-        await ctx.send(
-            "Sous-commandes :\n"
-            "- `!rolemenu create <titre> <#salon> [max_values]`\n"
-            "- `!rolemenu addrole <menu_id> <@role> [emoji] [label]`",
-            delete_after=20,
-        )
-
-    @rolemenu_group.command(name="create")
-    @commands.has_permissions(manage_roles=True)
-    async def rolemenu_create(
-        self,
-        ctx: commands.Context,
-        titre: str,
-        channel: discord.TextChannel,
-        max_values: Optional[int] = 1,
-    ):
-        await ctx.message.delete()
-
-        menu_id = f"{ctx.guild.id}-{ctx.channel.id}-{ctx.message.id}"
-
-        embed = discord.Embed(
-            title=titre,
-            description="Sélectionnez les rôles dans le menu ci-dessous.",
-            color=discord.Color.blurple(),
-        )
-        msg = await channel.send(embed=embed)
-
-        menu_entry = {
-            "id": menu_id,
-            "guild_id": ctx.guild.id,
-            "channel_id": channel.id,
-            "message_id": msg.id,
-            "placeholder": "Choisissez vos rôles",
-            "max_values": max_values,
-            "roles": [],
-        }
-
-        self.config.setdefault("role_menus", []).append(menu_entry)
-        self.save()
-
-        await ctx.send(
-            f"Menu de rôles créé avec ID `{menu_id}`. "
-            f"Ajoutez des rôles avec `!rolemenu addrole {menu_id} @role [emoji] [label]`.",
-            delete_after=20,
-        )
-
-    @rolemenu_group.command(name="addrole")
-    @commands.has_permissions(manage_roles=True)
-    async def rolemenu_addrole(
-        self,
-        ctx: commands.Context,
-        menu_id: str,
-        role: discord.Role,
-        emoji: Optional[str] = None,
-        *,
-        label: Optional[str] = None,
-    ):
-        await ctx.message.delete()
-
-        menu = next((m for m in self.config.get("role_menus", []) if m["id"] == menu_id), None)
-        if not menu:
-            await ctx.send("Menu introuvable. Vérifie l'ID.", delete_after=10)
-            return
-
-        menu["roles"].append(
-            {
-                "role_id": role.id,
-                "emoji": emoji,
-                "label": label or role.name,
-                "description": None,
-            }
-        )
-        self.save()
-
-        guild = ctx.guild
-        channel = guild.get_channel(menu["channel_id"])
-        if not isinstance(channel, discord.TextChannel):
-            await ctx.send("Salon du menu introuvable.", delete_after=10)
-            return
-
-        try:
-            msg = await channel.fetch_message(menu["message_id"])
-        except discord.NotFound:
-            await ctx.send("Message du menu introuvable.", delete_after=10)
-            return
-
-        view = RoleSelectView(self, menu_id)
-        await msg.edit(view=view)
-
-        await ctx.send(
-            f"Rôle {role.mention} ajouté au menu `{menu_id}`.",
-            delete_after=10,
-        )
-
-
-# ========== VUES & MODALS ==========
+# ========== VUES & MODALS DU PANNEAU ==========
 
 
 class ReactionPanelView(discord.ui.View):
@@ -385,11 +302,11 @@ class ReactionPanelView(discord.ui.View):
         await interaction.response.send_modal(modal)
 
     @discord.ui.button(
-        label="Ajouter rôle à menu",
+        label="Configurer menus",
         style=discord.ButtonStyle.secondary,
-        custom_id="rr:addrole_menu",
+        custom_id="rr:config_menus",
     )
-    async def addrole_menu_button(
+    async def config_menus_button(
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         if not self.user_allowed(interaction.user):
@@ -399,8 +316,36 @@ class ReactionPanelView(discord.ui.View):
             )
             return
 
-        modal = AddRoleToMenuModal(self.cog)
-        await interaction.response.send_modal(modal)
+        guild = interaction.guild
+        if guild is None:
+            await interaction.response.send_message(
+                "Action impossible en message privé.",
+                ephemeral=True,
+            )
+            return
+
+        menus = [m for m in self.cog.config.get("role_menus", []) if m["guild_id"] == guild.id]
+        if not menus:
+            await interaction.response.send_message(
+                "Aucun menu de rôles configuré sur ce serveur.",
+                ephemeral=True,
+            )
+            return
+
+        view = MenuConfigSelectView(self.cog, guild)
+        has_menus = await view.populate()
+        if not has_menus:
+            await interaction.response.send_message(
+                "Aucun menu exploitable.",
+                ephemeral=True,
+            )
+            return
+
+        await interaction.response.send_message(
+            "Sélectionnez un menu à configurer :",
+            view=view,
+            ephemeral=True,
+        )
 
     @discord.ui.button(
         label="Lister configs",
@@ -692,45 +637,129 @@ class CreateRoleMenuModal(discord.ui.Modal, title="Nouveau menu de rôles"):
 
         await interaction.response.send_message(
             f"Menu de rôles créé avec ID `{menu_id}` dans {channel.mention}.\n"
-            f"Ajoute des rôles avec le bouton 'Ajouter rôle à menu' ou `!rolemenu addrole`.",
+            f"Utilise 'Configurer menus' pour y associer des rôles.",
             ephemeral=True,
         )
 
 
-class AddRoleToMenuModal(discord.ui.Modal, title="Ajouter rôle à un menu"):
-    def __init__(self, cog: ReactionRolesCog):
-        super().__init__()
+class MenuConfigSelectView(discord.ui.View):
+    """
+    Étape 1 : choisir quel menu de rôles configurer (via Select).
+    """
+
+    def __init__(self, cog: ReactionRolesCog, guild: discord.Guild):
+        super().__init__(timeout=60)
         self.cog = cog
+        self.guild = guild
+        self.menu_select: Optional[discord.ui.Select] = None
 
-        self.menu_id_input = discord.ui.TextInput(
-            label="ID du menu",
-            required=True,
-            placeholder="ID donné à la création",
+    async def populate(self) -> bool:
+        menus = [m for m in self.cog.config.get("role_menus", []) if m["guild_id"] == self.guild.id]
+        if not menus:
+            return False
+
+        options: List[discord.SelectOption] = []
+        for m in menus[:25]:  # limite Discord : 25 options max[web:61]
+            ch = self.guild.get_channel(m["channel_id"])
+            label = f"{ch.name if ch else 'inconnu'} ({m['id'][-6:]})"
+            desc = f"Menu ID: {m['id']}"
+            options.append(
+                discord.SelectOption(
+                    label=label[:100],
+                    value=m["id"],
+                    description=desc[:100],
+                )
+            )
+
+        select = discord.ui.Select(
+            placeholder="Choisissez un menu à configurer",
+            options=options,
         )
-        self.add_item(self.menu_id_input)
+        select.callback = self.on_select_menu
+        self.menu_select = select
+        self.add_item(select)
+        return True
 
-        self.role_input = discord.ui.TextInput(
-            label="Rôle (mention ou ID)",
-            required=True,
-            placeholder="@Membre ou 1234567890",
+    async def on_select_menu(self, interaction: discord.Interaction):
+        menu_id = self.menu_select.values[0]
+        new_view = MenuRoleConfigView(self.cog, menu_id)
+        has_roles = await new_view.populate(interaction.guild)
+        if not has_roles:
+            await interaction.response.edit_message(
+                content="Aucun rôle gérable trouvé (vérifie les permissions et la hiérarchie).",
+                view=None,
+            )
+            return
+
+        await interaction.response.edit_message(
+            content=f"Configurez les rôles pour le menu `{menu_id}` :\n"
+                    f"- Cochez les rôles à inclure dans le menu.\n"
+                    f"- Décochez ceux à retirer.",
+            view=new_view,
         )
-        self.add_item(self.role_input)
 
-        self.emoji_input = discord.ui.TextInput(
-            label="Emoji (optionnel)",
-            required=False,
-            placeholder="✅",
+
+class MenuRoleConfigView(discord.ui.View):
+    """
+    Étape 2 : choisir quels rôles sont inclus dans le menu sélectionné.
+    """
+
+    def __init__(self, cog: ReactionRolesCog, menu_id: str):
+        super().__init__(timeout=120)
+        self.cog = cog
+        self.menu_id = menu_id
+        self.role_select: Optional[discord.ui.Select] = None
+
+    async def populate(self, guild: discord.Guild) -> bool:
+        menu = next((m for m in self.cog.config.get("role_menus", []) if m["id"] == self.menu_id), None)
+        if not menu:
+            return False
+
+        # Rôles actuellement enregistrés dans le menu
+        current_ids: Set[int] = {entry["role_id"] for entry in menu["roles"]}
+
+        me = guild.me
+        if me is None:
+            return False
+
+        # On liste les rôles que le bot peut gérer (sous son propre rôle, sauf @everyone)
+        candidate_roles: List[discord.Role] = []
+        for r in guild.roles:
+            if r.is_default():
+                continue
+            if r.position >= me.top_role.position:
+                continue
+            candidate_roles.append(r)
+
+        if not candidate_roles:
+            return False
+
+        # On limite à 25 pour respecter la limite Discord[web:61]
+        candidate_roles = list(reversed(candidate_roles))[:25]
+
+        options: List[discord.SelectOption] = []
+        for role in candidate_roles:
+            default_selected = role.id in current_ids
+            options.append(
+                discord.SelectOption(
+                    label=role.name[:100],
+                    value=str(role.id),
+                    default=default_selected,
+                )
+            )
+
+        select = discord.ui.Select(
+            placeholder="Sélectionnez les rôles inclus dans ce menu",
+            min_values=0,
+            max_values=len(options),
+            options=options,
         )
-        self.add_item(self.emoji_input)
+        select.callback = self.on_select_roles
+        self.role_select = select
+        self.add_item(select)
+        return True
 
-        self.label_input = discord.ui.TextInput(
-            label="Label (optionnel)",
-            required=False,
-            placeholder="Nom affiché (vide = rôle)",
-        )
-        self.add_item(self.label_input)
-
-    async def on_submit(self, interaction: discord.Interaction):
+    async def on_select_roles(self, interaction: discord.Interaction):
         guild = interaction.guild
         if guild is None:
             await interaction.response.send_message(
@@ -739,52 +768,35 @@ class AddRoleToMenuModal(discord.ui.Modal, title="Ajouter rôle à un menu"):
             )
             return
 
-        menu_id = self.menu_id_input.value.strip()
-        menu = next((m for m in self.cog.config.get("role_menus", []) if m["id"] == menu_id), None)
+        menu = next((m for m in self.cog.config.get("role_menus", []) if m["id"] == self.menu_id), None)
         if not menu:
             await interaction.response.send_message(
-                "Menu introuvable. Vérifie l'ID.",
+                "Menu introuvable.",
                 ephemeral=True,
             )
             return
 
-        raw_role = self.role_input.value.strip()
-        role = None
-        if raw_role.startswith("<@&") and raw_role.endswith(">"):
-            try:
-                rid = int(raw_role[3:-1])
-                role = guild.get_role(rid)
-            except ValueError:
-                pass
-        if role is None:
-            try:
-                rid = int(raw_role)
-                role = guild.get_role(rid)
-            except ValueError:
-                pass
-        if role is None:
-            role = discord.utils.get(guild.roles, name=raw_role)
+        selected_ids = {int(v) for v in self.role_select.values}
 
-        if role is None:
-            await interaction.response.send_message(
-                "Rôle introuvable.",
-                ephemeral=True,
+        # On reconstruit la liste des rôles du menu à partir des rôles sélectionnés
+        new_entries: List[Dict[str, Any]] = []
+        for rid in selected_ids:
+            role = guild.get_role(rid)
+            if not role:
+                continue
+            new_entries.append(
+                {
+                    "role_id": rid,
+                    "emoji": None,
+                    "label": role.name,
+                    "description": None,
+                }
             )
-            return
 
-        emoji = self.emoji_input.value.strip() or None
-        label = self.label_input.value.strip() or role.name
-
-        menu["roles"].append(
-            {
-                "role_id": role.id,
-                "emoji": emoji,
-                "label": label,
-                "description": None,
-            }
-        )
+        menu["roles"] = new_entries
         self.cog.save()
 
+        # On met à jour le vrai message du menu de rôles
         channel = guild.get_channel(menu["channel_id"])
         if not isinstance(channel, discord.TextChannel):
             await interaction.response.send_message(
@@ -802,17 +814,17 @@ class AddRoleToMenuModal(discord.ui.Modal, title="Ajouter rôle à un menu"):
             )
             return
 
-        view = RoleSelectView(self.cog, menu_id)
+        view = RoleSelectView(self.cog, self.menu_id)
         await msg.edit(view=view)
 
-        await interaction.response.send_message(
-            f"Rôle {role.mention} ajouté au menu `{menu_id}`.",
-            ephemeral=True,
+        await interaction.response.edit_message(
+            content=f"Menu `{self.menu_id}` mis à jour. Rôles inclus : {len(new_entries)}.",
+            view=None,
         )
 
 
 class RoleSelectView(discord.ui.View):
-    """Vue persistante pour un menu de rôles."""
+    """Vue persistante pour un menu de rôles côté utilisateurs."""
 
     def __init__(self, cog: ReactionRolesCog, menu_id: str):
         super().__init__(timeout=None)
@@ -828,7 +840,7 @@ class RoleSelectView(discord.ui.View):
         if not guild:
             return
 
-        options = []
+        options: List[discord.SelectOption] = []
         for entry in menu["roles"]:
             role = guild.get_role(entry["role_id"])
             if not role:
@@ -887,7 +899,6 @@ class RoleSelectView(discord.ui.View):
             return
 
         selected_role_ids = {int(v) for v in interaction.data.get("values", [])}
-        # On utilise la config, pas le payload brut
         all_role_ids = {entry["role_id"] for entry in menu["roles"]}
 
         to_add = selected_role_ids
