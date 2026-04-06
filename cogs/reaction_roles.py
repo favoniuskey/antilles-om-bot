@@ -12,7 +12,7 @@ os.makedirs(DATA_DIR, exist_ok=True)
 CONFIG_FILE = os.path.join(DATA_DIR, "reaction_roles.json")
 
 # ID super-admin autorisé à poser le panneau
-OWNER_ID = 595343318779428874  # <-- à remplacer par ton ID
+OWNER_ID = 123456789012345678  # <-- à remplacer par ton ID
 
 
 def load_config() -> Dict[str, Any]:
@@ -115,7 +115,6 @@ class ReactionRolesCog(commands.Cog):
         )
         self.save()
 
-        # On tente d'ajouter la réaction pour toi
         try:
             msg = await ctx.channel.fetch_message(message_id)
             await msg.add_reaction(emoji_str)
@@ -263,7 +262,7 @@ class ReactionRolesCog(commands.Cog):
 
         embed = discord.Embed(
             title=titre,
-            description="Sélectionnez les rôles désirés dans le menu ci-dessous.",
+            description="Sélectionnez les rôles dans le menu ci-dessous.",
             color=discord.Color.blurple(),
         )
         msg = await channel.send(embed=embed)
@@ -386,7 +385,7 @@ class ReactionPanelView(discord.ui.View):
         await interaction.response.send_modal(modal)
 
     @discord.ui.button(
-        label="Ajouter rôle à un menu",
+        label="Ajouter rôle à menu",
         style=discord.ButtonStyle.secondary,
         custom_id="rr:addrole_menu",
     )
@@ -429,22 +428,22 @@ class ReactionPanelView(discord.ui.View):
         await interaction.response.send_message(text, ephemeral=True)
 
 
-class CreateReactionRoleModal(discord.ui.Modal, title="Créer un reaction-role"):
+class CreateReactionRoleModal(discord.ui.Modal, title="Nouveau reaction-role"):
     def __init__(self, cog: ReactionRolesCog):
         super().__init__()
         self.cog = cog
 
         self.channel_input = discord.ui.TextInput(
-            label="Salon (mention ou ID, vide = salon du message)",
+            label="Salon (mention ou ID)",
             required=False,
-            placeholder="#règlement ou ID",
+            placeholder="#règlement ou ID (vide = actuel)",
         )
         self.add_item(self.channel_input)
 
         self.message_input = discord.ui.TextInput(
-            label="ID ou URL du message",
+            label="Message (ID ou URL)",
             required=True,
-            placeholder="1234567890 ou https://discord.com/channels/...",
+            placeholder="1234567890 ou URL",
         )
         self.add_item(self.message_input)
 
@@ -466,7 +465,7 @@ class CreateReactionRoleModal(discord.ui.Modal, title="Créer un reaction-role")
         guild = interaction.guild
         if guild is None:
             await interaction.response.send_message(
-                "Action indisponible en message privé.",
+                "Action impossible en message privé.",
                 ephemeral=True,
             )
             return
@@ -529,7 +528,6 @@ class CreateReactionRoleModal(discord.ui.Modal, title="Créer un reaction-role")
                 )
                 return
 
-        # Emoji
         emoji_str = self.emoji_input.value.strip()
 
         # Rôle
@@ -557,7 +555,6 @@ class CreateReactionRoleModal(discord.ui.Modal, title="Créer un reaction-role")
             )
             return
 
-        # Enregistrement config
         if self.cog.find_reaction_entry(message_id, emoji_str):
             await interaction.response.send_message(
                 "Cette combinaison message/emoji existe déjà.",
@@ -576,7 +573,6 @@ class CreateReactionRoleModal(discord.ui.Modal, title="Créer un reaction-role")
         )
         self.cog.save()
 
-        # On tente d'ajouter la réaction
         try:
             msg = await channel.fetch_message(message_id)
             await msg.add_reaction(emoji_str)
@@ -584,20 +580,20 @@ class CreateReactionRoleModal(discord.ui.Modal, title="Créer un reaction-role")
             logger.warning(f"Impossible d'ajouter la réaction automatiquement: {e}")
 
         await interaction.response.send_message(
-            f"Reaction-role créé sur le message `{message_id}` avec l'emoji `{emoji_str}` pour le rôle {role.mention}.",
+            f"Reaction-role créé sur le message `{message_id}` avec `{emoji_str}` pour {role.mention}.",
             ephemeral=True,
         )
 
 
-class CreateRoleMenuModal(discord.ui.Modal, title="Créer un menu de rôles"):
+class CreateRoleMenuModal(discord.ui.Modal, title="Nouveau menu de rôles"):
     def __init__(self, cog: ReactionRolesCog):
         super().__init__()
         self.cog = cog
 
         self.channel_input = discord.ui.TextInput(
-            label="Salon (mention ou ID, vide = salon actuel)",
+            label="Salon (mention ou ID)",
             required=False,
-            placeholder="#roles ou ID",
+            placeholder="#roles ou ID (vide = actuel)",
         )
         self.add_item(self.channel_input)
 
@@ -609,14 +605,14 @@ class CreateRoleMenuModal(discord.ui.Modal, title="Créer un menu de rôles"):
         self.add_item(self.title_input)
 
         self.placeholder_input = discord.ui.TextInput(
-            label="Texte du menu (placeholder)",
+            label="Texte du menu",
             required=False,
             placeholder="Choisissez vos rôles",
         )
         self.add_item(self.placeholder_input)
 
         self.max_values_input = discord.ui.TextInput(
-            label="Nombre max de rôles sélectionnables (1 par défaut)",
+            label="Max rôles sélectionnables",
             required=False,
             placeholder="1",
         )
@@ -626,7 +622,7 @@ class CreateRoleMenuModal(discord.ui.Modal, title="Créer un menu de rôles"):
         guild = interaction.guild
         if guild is None:
             await interaction.response.send_message(
-                "Action indisponible en message privé.",
+                "Action impossible en message privé.",
                 ephemeral=True,
             )
             return
@@ -676,7 +672,7 @@ class CreateRoleMenuModal(discord.ui.Modal, title="Créer un menu de rôles"):
 
         embed = discord.Embed(
             title=titre,
-            description="Sélectionnez les rôles désirés dans le menu ci-dessous.",
+            description="Sélectionnez les rôles dans le menu ci-dessous.",
             color=discord.Color.blurple(),
         )
         msg = await channel.send(embed=embed)
@@ -696,12 +692,12 @@ class CreateRoleMenuModal(discord.ui.Modal, title="Créer un menu de rôles"):
 
         await interaction.response.send_message(
             f"Menu de rôles créé avec ID `{menu_id}` dans {channel.mention}.\n"
-            f"Ajoute des rôles avec le bouton 'Ajouter rôle à un menu' ou la commande `!rolemenu addrole`.",
+            f"Ajoute des rôles avec le bouton 'Ajouter rôle à menu' ou `!rolemenu addrole`.",
             ephemeral=True,
         )
 
 
-class AddRoleToMenuModal(discord.ui.Modal, title="Ajouter un rôle à un menu"):
+class AddRoleToMenuModal(discord.ui.Modal, title="Ajouter rôle à un menu"):
     def __init__(self, cog: ReactionRolesCog):
         super().__init__()
         self.cog = cog
@@ -709,7 +705,7 @@ class AddRoleToMenuModal(discord.ui.Modal, title="Ajouter un rôle à un menu"):
         self.menu_id_input = discord.ui.TextInput(
             label="ID du menu",
             required=True,
-            placeholder="ID donné lors de la création",
+            placeholder="ID donné à la création",
         )
         self.add_item(self.menu_id_input)
 
@@ -728,9 +724,9 @@ class AddRoleToMenuModal(discord.ui.Modal, title="Ajouter un rôle à un menu"):
         self.add_item(self.emoji_input)
 
         self.label_input = discord.ui.TextInput(
-            label="Label (optionnel, vide = nom du rôle)",
+            label="Label (optionnel)",
             required=False,
-            placeholder="Nom affiché dans le menu",
+            placeholder="Nom affiché (vide = rôle)",
         )
         self.add_item(self.label_input)
 
@@ -738,7 +734,7 @@ class AddRoleToMenuModal(discord.ui.Modal, title="Ajouter un rôle à un menu"):
         guild = interaction.guild
         if guild is None:
             await interaction.response.send_message(
-                "Action indisponible en message privé.",
+                "Action impossible en message privé.",
                 ephemeral=True,
             )
             return
@@ -792,7 +788,7 @@ class AddRoleToMenuModal(discord.ui.Modal, title="Ajouter un rôle à un menu"):
         channel = guild.get_channel(menu["channel_id"])
         if not isinstance(channel, discord.TextChannel):
             await interaction.response.send_message(
-                "Salon du menu introuvable (ou non textuel).",
+                "Salon du menu introuvable.",
                 ephemeral=True,
             )
             return
@@ -877,7 +873,7 @@ class RoleSelectView(discord.ui.View):
         guild = interaction.guild
         if guild is None:
             await interaction.response.send_message(
-                "Action indisponible en message privé.",
+                "Action impossible en message privé.",
                 ephemeral=True,
             )
             return
@@ -891,7 +887,8 @@ class RoleSelectView(discord.ui.View):
             return
 
         selected_role_ids = {int(v) for v in interaction.data.get("values", [])}
-        all_role_ids = {int(opt["value"]) for opt in interaction.data["component"]["options"]}
+        # On utilise la config, pas le payload brut
+        all_role_ids = {entry["role_id"] for entry in menu["roles"]}
 
         to_add = selected_role_ids
         to_remove = all_role_ids - selected_role_ids
