@@ -12,7 +12,7 @@ os.makedirs(DATA_DIR, exist_ok=True)
 CONFIG_FILE = os.path.join(DATA_DIR, "reaction_roles.json")
 
 # ID super-admin autorisé à poser le panneau
-OWNER_ID = 123456789012345678  # <-- à remplacer par ton ID
+OWNER_ID = 595343318779428874  # <-- à remplacer par ton ID
 
 
 def load_config() -> Dict[str, Any]:
