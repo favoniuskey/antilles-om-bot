@@ -238,7 +238,9 @@ async def on_ready():
             "cogs.server_dump",
             "cogs.RoleManager",
             "cogs.pilot_stats",
-            "cogs.atc_stats"
+            "cogs.atc_stats",
+            "cogs.music"
+        
         ]
 
         for cog in cogs_to_load:
