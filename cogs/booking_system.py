@@ -428,7 +428,7 @@ class BookingMonitor(commands.Cog):
                     "perPage": CONFIG["PER_PAGE"],
                 }
 
-                async with aiohttp.ClientSession().get(
+                async with aiohttp.ClientSession() as session, session.get(
                     CONFIG["BASE_URL"], headers=headers, params=params, timeout=30
                 ) as response:
                     if response.status == 200:

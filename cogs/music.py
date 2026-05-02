@@ -317,7 +317,13 @@ class MusicCog(commands.Cog, name="Musique"):
     @app_commands.describe(query="Titre, URL YouTube ou lien de playlist")
     async def play(self, interaction: discord.Interaction, query: str):
         await interaction.response.defer(thinking=True)
-        player = await self._ensure_player(interaction)
+        try:
+            player = await self._ensure_player(interaction)
+        except wavelink.exceptions.ChannelTimeoutException:
+            return await interaction.followup.send(
+                "❌ Impossible de rejoindre le canal vocal. Réessaie dans quelques secondes.",
+                ephemeral=True,
+            )
         if not player:
             return
 
