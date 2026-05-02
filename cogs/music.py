@@ -535,14 +535,21 @@ class MusicCog(commands.Cog, name="Musique"):
             return await interaction.response.send_message(
                 f"{EMOJIS['palm']} Tu dois être dans un canal vocal!", ephemeral=True
             )
-        player: wavelink.Player = interaction.guild.voice_client  # type: ignore
-        if player:
-            await player.move_to(interaction.user.voice.channel)
-        else:
-            player = await interaction.user.voice.channel.connect(cls=wavelink.Player)
-            player.text_channel   = interaction.channel
-            player.player_message = None
-        await interaction.response.send_message(
+        await interaction.response.defer(ephemeral=True)
+        try:
+            player: wavelink.Player = interaction.guild.voice_client  # type: ignore
+            if player:
+                await player.move_to(interaction.user.voice.channel)
+            else:
+                player = await interaction.user.voice.channel.connect(cls=wavelink.Player)
+                player.text_channel   = interaction.channel
+                player.player_message = None
+        except wavelink.exceptions.ChannelTimeoutException:
+            return await interaction.followup.send(
+                "❌ Impossible de rejoindre le canal vocal. Réessaie dans quelques secondes.",
+                ephemeral=True,
+            )
+        await interaction.followup.send(
             f"{EMOJIS['note']} Connecté à **{interaction.user.voice.channel.name}**!", ephemeral=True
         )
 
