@@ -1,508 +1,545 @@
+"""
+╔══════════════════════════════════════════════════════════╗
+║         🎵 COG MUSIQUE — VIBES ANTILLAISES 🌴            ║
+║  Propulsé par Wavelink 3.2 + Lavalink public             ║
+╚══════════════════════════════════════════════════════════╝
+"""
+
 import discord
 from discord import app_commands, ui
-from discord.ext import commands, tasks
-import asyncio
-import os
-import typing
-import datetime
+from discord.ext import commands
+import wavelink
 import random
+import logging
 
-# Émojis et éléments thématiques des Antilles
-ANTILLES_EMOJIS = {
-    "play": "▶️",
-    "pause": "⏸️",
-    "stop": "⏹️",
-    "skip": "⏭️",
-    "palm": "🌴",
-    "wave": "🌊",
-    "sun": "☀️",
+logger = logging.getLogger("music_cog")
+
+# ─────────────────────────────────────────────
+#  THÈME ANTILLES
+# ─────────────────────────────────────────────
+
+EMOJIS = {
+    "play":      "▶️",
+    "pause":     "⏸️",
+    "stop":      "⏹️",
+    "skip":      "⏭️",
+    "loop":      "🔁",
+    "shuffle":   "🔀",
+    "volume":    "🔊",
+    "queue":     "📋",
+    "note":      "🎵",
+    "palm":      "🌴",
+    "wave":      "🌊",
+    "sun":       "☀️",
+    "beach":     "🏝️",
+    "drum":      "🪘",
+    "dancer":    "💃",
     "pineapple": "🍍",
-    "coconut": "🥥",
-    "beach": "🏝️",
-    "note": "🎵",
-    "shell": "🐚",
-    "dancer": "💃",
-    "flower": "🌺",
-    "drum": "🪘",
-    "volume": "🔊",
-    "parrot": "🦜"
+    "search":    "🔍",
 }
 
-# Couleurs thématiques
-ANTILLES_COLORS = {
-    "turquoise": 0x40E0D0,   # Eau turquoise
-    "sand": 0xF5DEB3,        # Sable
-    "sunset": 0xFF7F50,      # Coucher de soleil
-    "palm": 0x00A651,        # Palmier
-    "coral": 0xFF6F61,       # Corail
-    "ocean": 0x0077BE        # Océan profond
+COLORS = {
+    "turquoise": 0x40E0D0,
+    "sand":      0xF5DEB3,
+    "sunset":    0xFF7F50,
+    "palm":      0x00A651,
+    "coral":     0xFF6F61,
+    "ocean":     0x0077BE,
 }
 
-class MusicPlayerView(ui.View):
-    def __init__(self, cog, timeout=180):
-        super().__init__(timeout=timeout)
-        self.cog = cog
+QUOTES = [
+    "La musique des Antilles, c'est le soleil en notes! 🌴",
+    "À la Caraïbe, le rythme est un mode de vie 🥁",
+    "Laissez-vous porter par les vibrations tropicales 🌊",
+    "Le zouk et la biguine réchauffent les cœurs 💃",
+    "Des mélodies qui sentent le sable chaud et l'eau turquoise 🏝️",
+    "La musique antillaise : un remède contre la grisaille! ☀️",
+    "Vibrations des Caraïbes pour ensoleiller votre journée 🌺",
+]
 
-    @ui.button(label="Pause", emoji="⏸️", style=discord.ButtonStyle.primary)
-    async def pause_button(self, interaction: discord.Interaction, button: ui.Button):
-        if not interaction.guild.voice_client or not interaction.guild.voice_client.is_playing():
-            return await interaction.response.send_message("❌ Je ne joue pas de musique actuellement!", ephemeral=True)
-        
-        interaction.guild.voice_client.pause()
-        button.label = "Reprendre"
-        button.emoji = "▶️"
-        button.style = discord.ButtonStyle.success
-        self.children[1].disabled = False  # Enable resume button
-        await interaction.response.edit_message(view=self)
-        await interaction.followup.send(f"{ANTILLES_EMOJIS['pause']} Musique en pause", ephemeral=True)
+# ─────────────────────────────────────────────
+#  NOEUDS LAVALINK PUBLICS
+#  wavelink essaie dans l'ordre, bascule auto
+# ─────────────────────────────────────────────
 
-    @ui.button(label="Suivant", emoji="⏭️", style=discord.ButtonStyle.secondary)
-    async def skip_button(self, interaction: discord.Interaction, button: ui.Button):
-        if not interaction.guild.voice_client or not interaction.guild.voice_client.is_playing():
-            return await interaction.response.send_message("❌ Je ne joue pas de musique actuellement!", ephemeral=True)
-        
-        guild_id = interaction.guild.id
-        
-        if guild_id not in self.cog.queue or len(self.cog.queue[guild_id]) == 0:
-            await interaction.response.send_message(f"{ANTILLES_EMOJIS['skip']} Piste ignorée (fin de la file d'attente)", ephemeral=True)
+LAVALINK_NODES = [
+    {"uri": "http://lavalink.clxud.xyz:2333",    "password": "youshallnotpass"},
+    {"uri": "http://lavalink.oops.wtf:80",        "password": "www.freelavalink.ga"},
+    {"uri": "http://lavalink.devz.cloud:80",      "password": "mathiscool"},
+    {"uri": "http://lavalink1.alfateam.tech:443", "password": "alfateamlavalink"},
+]
+
+
+# ─────────────────────────────────────────────
+#  HELPERS
+# ─────────────────────────────────────────────
+
+def fmt_duration(ms: int) -> str:
+    if not ms:
+        return "∞"
+    s = ms // 1000
+    m, s = divmod(s, 60)
+    h, m = divmod(m, 60)
+    return f"{h}:{m:02d}:{s:02d}" if h else f"{m}:{s:02d}"
+
+
+def vol_bar(vol: int) -> str:
+    filled = vol // 10
+    return "█" * filled + "░" * (10 - filled)
+
+
+# ─────────────────────────────────────────────
+#  VUE BOUTONS
+# ─────────────────────────────────────────────
+
+class PlayerView(ui.View):
+    def __init__(self, cog: "MusicCog", guild_id: int):
+        super().__init__(timeout=None)
+        self.cog      = cog
+        self.guild_id = guild_id
+
+    def _player(self) -> wavelink.Player | None:
+        guild = self.cog.bot.get_guild(self.guild_id)
+        return guild.voice_client if guild else None  # type: ignore
+
+    @ui.button(emoji="⏸️", label="Pause", style=discord.ButtonStyle.primary, custom_id="music_pause")
+    async def btn_pause(self, interaction: discord.Interaction, button: ui.Button):
+        player = self._player()
+        if not player:
+            return await interaction.response.send_message("❌ Pas de lecteur actif.", ephemeral=True)
+        await player.pause(not player.paused)
+        if player.paused:
+            button.emoji = discord.PartialEmoji.from_str("▶️")
+            button.label = "Reprendre"
+            button.style = discord.ButtonStyle.success
         else:
-            await interaction.response.send_message(f"{ANTILLES_EMOJIS['skip']} Piste ignorée (encore {len(self.cog.queue[guild_id])} dans la file)", ephemeral=True)
-        
-        interaction.guild.voice_client.stop()
+            button.emoji = discord.PartialEmoji.from_str("⏸️")
+            button.label = "Pause"
+            button.style = discord.ButtonStyle.primary
+        await interaction.response.edit_message(view=self)
 
-    @ui.button(label="Stop", emoji="⏹️", style=discord.ButtonStyle.danger)
-    async def stop_button(self, interaction: discord.Interaction, button: ui.Button):
-        if not interaction.guild.voice_client:
-            return await interaction.response.send_message("❌ Je ne suis pas dans un canal vocal!", ephemeral=True)
-        
-        guild_id = interaction.guild.id
-        
-        if guild_id in self.cog.queue:
-            self.cog.queue[guild_id] = []
-        
-        if guild_id in self.cog.now_playing:
-            del self.cog.now_playing[guild_id]
-        
-        interaction.guild.voice_client.stop()
-        
-        # Désactiver tous les boutons
+    @ui.button(emoji="⏭️", label="Skip", style=discord.ButtonStyle.secondary, custom_id="music_skip")
+    async def btn_skip(self, interaction: discord.Interaction, button: ui.Button):
+        player = self._player()
+        if not player:
+            return await interaction.response.send_message("❌ Pas de lecteur actif.", ephemeral=True)
+        await player.skip(force=True)
+        await interaction.response.send_message(f"{EMOJIS['skip']} Piste passée!", ephemeral=True)
+
+    @ui.button(emoji="⏹️", label="Stop", style=discord.ButtonStyle.danger, custom_id="music_stop")
+    async def btn_stop(self, interaction: discord.Interaction, button: ui.Button):
+        player = self._player()
+        if not player:
+            return await interaction.response.send_message("❌ Pas de lecteur actif.", ephemeral=True)
+        player.queue.clear()
+        await player.stop()
+        await player.disconnect()
         for child in self.children:
             child.disabled = True
         await interaction.response.edit_message(view=self)
-        await interaction.followup.send(f"{ANTILLES_EMOJIS['stop']} Lecture arrêtée et file d'attente vidée", ephemeral=True)
+        await interaction.followup.send(f"{EMOJIS['stop']} Lecture stoppée.", ephemeral=True)
 
-    @ui.button(label="+ Volume", emoji="🔊", style=discord.ButtonStyle.secondary)
-    async def volume_up_button(self, interaction: discord.Interaction, button: ui.Button):
-        guild_id = interaction.guild.id
-        
-        if guild_id not in self.cog.volume:
-            self.cog.volume[guild_id] = 0.5
-        
-        # Augmenter le volume de 10%
-        new_volume = min(1.0, self.cog.volume[guild_id] + 0.1)
-        self.cog.volume[guild_id] = new_volume
-        
-        # Appliquer immédiatement
-        if interaction.guild.voice_client and interaction.guild.voice_client.source:
-            interaction.guild.voice_client.source.volume = new_volume
-        
-        percentage = int(new_volume * 100)
-        await interaction.response.send_message(f"{ANTILLES_EMOJIS['volume']} Volume ajusté à {percentage}%", ephemeral=True)
+    @ui.button(emoji="🔁", label="Loop", style=discord.ButtonStyle.secondary, custom_id="music_loop")
+    async def btn_loop(self, interaction: discord.Interaction, button: ui.Button):
+        player = self._player()
+        if not player:
+            return await interaction.response.send_message("❌ Pas de lecteur actif.", ephemeral=True)
+        mode = player.queue.mode
+        if mode == wavelink.QueueMode.normal:
+            player.queue.mode = wavelink.QueueMode.loop
+            button.style = discord.ButtonStyle.success
+            button.label = "Loop 🔂"
+        elif mode == wavelink.QueueMode.loop:
+            player.queue.mode = wavelink.QueueMode.loop_all
+            button.label = "Loop All 🔁"
+        else:
+            player.queue.mode = wavelink.QueueMode.normal
+            button.style = discord.ButtonStyle.secondary
+            button.label = "Loop"
+        await interaction.response.edit_message(view=self)
+        await interaction.followup.send(
+            f"{EMOJIS['loop']} Mode : **{player.queue.mode.name}**", ephemeral=True
+        )
 
-    @ui.button(label="- Volume", emoji="🔉", style=discord.ButtonStyle.secondary)
-    async def volume_down_button(self, interaction: discord.Interaction, button: ui.Button):
-        guild_id = interaction.guild.id
-        
-        if guild_id not in self.cog.volume:
-            self.cog.volume[guild_id] = 0.5
-        
-        # Diminuer le volume de 10%
-        new_volume = max(0.0, self.cog.volume[guild_id] - 0.1)
-        self.cog.volume[guild_id] = new_volume
-        
-        # Appliquer immédiatement
-        if interaction.guild.voice_client and interaction.guild.voice_client.source:
-            interaction.guild.voice_client.source.volume = new_volume
-        
-        percentage = int(new_volume * 100)
-        await interaction.response.send_message(f"{ANTILLES_EMOJIS['volume']} Volume ajusté à {percentage}%", ephemeral=True)
+    @ui.button(emoji="🔊", label="+10%", style=discord.ButtonStyle.secondary, custom_id="music_vol_up")
+    async def btn_vol_up(self, interaction: discord.Interaction, button: ui.Button):
+        player = self._player()
+        if not player:
+            return await interaction.response.send_message("❌ Pas de lecteur actif.", ephemeral=True)
+        new_vol = min(100, player.volume + 10)
+        await player.set_volume(new_vol)
+        await interaction.response.send_message(
+            f"{EMOJIS['volume']} `{vol_bar(new_vol)}` **{new_vol}%**", ephemeral=True
+        )
+
+    @ui.button(emoji="🔉", label="-10%", style=discord.ButtonStyle.secondary, custom_id="music_vol_down")
+    async def btn_vol_down(self, interaction: discord.Interaction, button: ui.Button):
+        player = self._player()
+        if not player:
+            return await interaction.response.send_message("❌ Pas de lecteur actif.", ephemeral=True)
+        new_vol = max(0, player.volume - 10)
+        await player.set_volume(new_vol)
+        await interaction.response.send_message(
+            f"{EMOJIS['volume']} `{vol_bar(new_vol)}` **{new_vol}%**", ephemeral=True
+        )
 
 
-class MP3PlayerAntilles(commands.Cog):
-    def __init__(self, bot):
+# ─────────────────────────────────────────────
+#  COG PRINCIPAL
+# ─────────────────────────────────────────────
+
+class MusicCog(commands.Cog, name="Musique"):
+    """🎵 Système de musique complet — Vibes Antillaises"""
+
+    def __init__(self, bot: commands.Bot):
         self.bot = bot
-        self.queue = {}  # {guild_id: [track1, track2, ...]}
-        self.now_playing = {}  # {guild_id: current_track}
-        self.volume = {}  # {guild_id: volume_level}
-        self.player_messages = {}  # {guild_id: player_message}
-        self.update_now_playing.start()
-        
-        # Citations et messages thématiques des Antilles
-        self.antilles_quotes = [
-            "La musique des Antilles, c'est le soleil en notes! 🌴",
-            "À la Caraïbe, le rythme est un mode de vie 🥁",
-            "Laissez-vous porter par les vibrations tropicales 🌊",
-            "Le zouk et la biguine réchauffent les cœurs 💃",
-            "Des mélodies qui sentent le sable chaud et l'eau turquoise 🏝️",
-            "La musique antillaise: un remède contre la grisaille! ☀️",
-            "Le gwoka bat au rythme du cœur des îles 🪘",
-            "Vibrations des Caraïbes pour ensoleiller votre journée 🌺"
+
+    async def cog_load(self):
+        nodes = [
+            wavelink.Node(uri=n["uri"], password=n["password"])
+            for n in LAVALINK_NODES
         ]
-    
-    def cog_unload(self):
-        self.update_now_playing.cancel()
-    
-    @tasks.loop(seconds=10.0)
-    async def update_now_playing(self):
-        """Met à jour périodiquement les messages du lecteur"""
-        for guild_id, player_message in list(self.player_messages.items()):
-            try:
-                if guild_id in self.now_playing:
-                    # Récupérer l'objet guild
-                    guild = self.bot.get_guild(guild_id)
-                    if not guild or not guild.voice_client:
-                        # Nettoyage si le bot n'est plus connecté
-                        del self.player_messages[guild_id]
-                        continue
-                    
-                    # Mise à jour du message avec progression
-                    await self._update_player_message(guild)
-            except (discord.NotFound, discord.HTTPException):
-                # Nettoyage si le message n'existe plus
-                if guild_id in self.player_messages:
-                    del self.player_messages[guild_id]
-    
-    async def _update_player_message(self, guild):
-        """Met à jour le message du lecteur avec progression"""
-        guild_id = guild.id
-        if guild_id not in self.now_playing:
-            return
-        
-        track_info = self.now_playing[guild_id]
-        player_message = self.player_messages.get(guild_id)
-        if not player_message:
-            return
-            
-        # Créer une barre de progression visuelle
-        progress_bar = ""
-        if guild.voice_client and guild.voice_client.source:
-            # Simuler la progression (impossible de connaître la position exacte sans analyser le fichier)
-            progress_bar = self._create_progress_bar()
-            
-        # Créer un embed mis à jour
-        embed = self._create_playing_embed(guild_id, track_info, progress_bar)
-            
         try:
-            await player_message.edit(embed=embed)
-        except discord.HTTPException:
-            pass
-    
-    def _create_progress_bar(self):
-        """Crée une barre de progression aléatoire (puisqu'on ne peut pas mesurer la progression réelle)"""
-        position = random.randint(1, 10)
-        total = 10
-        
-        filled = ANTILLES_EMOJIS["wave"] * position
-        empty = "▬" * (total - position)
-        
-        return f"{filled}{empty}"
-    
-    def _create_playing_embed(self, guild_id, track_info, progress_bar=""):
-        """Crée un embed pour la piste en cours"""
-        # Choisir une couleur et un message aléatoires
-        color = random.choice(list(ANTILLES_COLORS.values()))
-        quote = random.choice(self.antilles_quotes)
-        
-        embed = discord.Embed(
-            title=f"{ANTILLES_EMOJIS['note']} Vibes Antillaises {ANTILLES_EMOJIS['palm']}",
-            description=f"**{track_info['title']}**\n{quote}",
-            color=color
-        )
-        
-        embed.add_field(
-            name=f"{ANTILLES_EMOJIS['dancer']} Demandé par",
-            value=track_info['requester'],
-            inline=True
-        )
-        
-        # Ajouter la barre de progression si disponible
-        if progress_bar:
-            embed.add_field(
-                name=f"{ANTILLES_EMOJIS['note']} Progression", 
-                value=progress_bar,
-                inline=False
-            )
-        
-        # Ajouter les infos de la file d'attente
-        if guild_id in self.queue and len(self.queue[guild_id]) > 0:
-            next_tracks = "\n".join([
-                f"{i+1}. **{t['title']}** ({t['requester']})" 
-                for i, t in enumerate(self.queue[guild_id][:3])
-            ])
-            
-            if len(self.queue[guild_id]) > 3:
-                next_tracks += f"\n... et {len(self.queue[guild_id]) - 3} autres"
-                
-            embed.add_field(
-                name=f"{ANTILLES_EMOJIS['pineapple']} À venir",
-                value=next_tracks,
-                inline=False
-            )
-        
-        # Ajouter un footer
-        embed.set_footer(text=f"Vibrations des Antilles {ANTILLES_EMOJIS['drum']} • DJ {self.bot.user.name}")
-        
-        return embed
-    
+            await wavelink.Pool.connect(nodes=nodes, client=self.bot, cache_capacity=100)
+            logger.info(f"🎵 Wavelink connecté ({len(nodes)} nœuds)")
+        except Exception as e:
+            logger.error(f"❌ Erreur connexion Lavalink: {e}")
+
+    # ── Événements Wavelink ───────────────────────────────────────────────────
+
     @commands.Cog.listener()
-    async def on_message(self, message):
-        # Ignorer les messages de bots
-        if message.author.bot:
+    async def on_wavelink_node_ready(self, payload: wavelink.NodeReadyEventPayload):
+        logger.info(f"✅ Nœud Lavalink prêt : {payload.node.uri}")
+
+    @commands.Cog.listener()
+    async def on_wavelink_track_start(self, payload: wavelink.TrackStartEventPayload):
+        player: wavelink.Player = payload.player
+        if not hasattr(player, "text_channel") or not player.text_channel:
             return
-        
-        # Vérifier si le bot est mentionné ET qu'il y a une pièce jointe
-        if self.bot.user in message.mentions and message.attachments:
-            # Vérifier si le fichier est un MP3
-            for attachment in message.attachments:
-                if attachment.filename.lower().endswith('.mp3'):
-                    # Si l'utilisateur est dans un canal vocal
-                    if message.author.voice:
-                        await self._play_attachment(message, attachment)
-                        return
-                    else:
-                        await message.channel.send(f"{ANTILLES_EMOJIS['palm']} Tu dois être dans un canal vocal pour que je puisse diffuser les vibes!")
-                        return
-    
-    async def _play_attachment(self, message, attachment):
-        """Joue un fichier joint au message avec une interface améliorée"""
-        # Préparation du dossier temp
-        if not os.path.exists('./temp'):
-            os.makedirs('./temp')
-        
-        # Télécharger le fichier
-        file_path = f'./temp/{attachment.filename}'
-        await attachment.save(file_path)
-        
-        guild_id = message.guild.id
-        
-        # Initialiser la file d'attente si elle n'existe pas
-        if guild_id not in self.queue:
-            self.queue[guild_id] = []
-            self.volume[guild_id] = 0.5  # Volume par défaut à 50%
-        
-        # Préparer les infos de la piste
-        track_info = {
-            'title': attachment.filename.replace('.mp3', ''),
-            'path': file_path,
-            'requester': message.author.name,
-            'duration': "Inconnue",
-            'added_at': datetime.datetime.now()
-        }
-        
-        # Si le bot n'est pas dans un canal vocal ou s'il est inactif
-        if not message.guild.voice_client:
-            # Message d'attente
-            wait_embed = discord.Embed(
-                title=f"{ANTILLES_EMOJIS['palm']} Préparation des Vibes Antillaises {ANTILLES_EMOJIS['sun']}",
-                description=f"**{track_info['title']}**\nJe me connecte à votre canal et prépare l'ambiance des îles...",
-                color=ANTILLES_COLORS["turquoise"]
-            )
-            loading_msg = await message.channel.send(embed=wait_embed)
-            
-            # Rejoindre le canal vocal
-            voice_client = await message.author.voice.channel.connect()
-            
-            # Jouer directement
-            await self._play_track(message, voice_client, track_info, loading_msg)
-        else:
-            # Ajouter à la file d'attente
-            self.queue[guild_id].append(track_info)
-            
-            embed = discord.Embed(
-                title=f"{ANTILLES_EMOJIS['pineapple']} Track ajouté à la playlist des îles",
-                description=f"**{track_info['title']}**\nDemandé par: {track_info['requester']}",
-                color=ANTILLES_COLORS["sunset"]
-            )
-            
-            # Si le bot ne joue pas de musique, démarrer la lecture
-            if not message.guild.voice_client.is_playing():
-                await self._play_next(message.guild.voice_client, message.channel)
+        embed = self._make_embed(player, payload.track)
+        view  = PlayerView(self, player.guild.id)
+        try:
+            if hasattr(player, "player_message") and player.player_message:
+                await player.player_message.edit(embed=embed, view=view)
             else:
-                position = len(self.queue[guild_id])
-                embed.add_field(
-                    name=f"{ANTILLES_EMOJIS['palm']} Position", 
-                    value=f"#{position} dans la playlist tropicale"
+                player.player_message = await player.text_channel.send(embed=embed, view=view)
+        except Exception:
+            player.player_message = await player.text_channel.send(embed=embed, view=view)
+
+    @commands.Cog.listener()
+    async def on_wavelink_track_end(self, payload: wavelink.TrackEndEventPayload):
+        player: wavelink.Player = payload.player
+        if not player.queue and not player.playing:
+            if hasattr(player, "text_channel") and player.text_channel:
+                embed = discord.Embed(
+                    title=f"{EMOJIS['beach']} Fin de la playlist",
+                    description="Toutes les tracks ont été jouées. Utilisez `/play` pour relancer!",
+                    color=COLORS["sand"],
                 )
-                await message.channel.send(embed=embed)
-    
-    async def _play_track(self, message, voice_client, track_info, existing_message=None):
-        """Joue une piste et met à jour les infos de lecture"""
-        guild_id = message.guild.id
-        
-        # Définir la piste en cours
-        self.now_playing[guild_id] = track_info
-        
-        # Créer la source audio
-        audio_source = discord.FFmpegPCMAudio(track_info['path'])
-        transformed_source = discord.PCMVolumeTransformer(audio_source, volume=self.volume[guild_id])
-        
-        # Jouer le fichier
-        voice_client.play(
-            transformed_source, 
-            after=lambda e: asyncio.run_coroutine_threadsafe(
-                self._play_next(voice_client, message.channel, error=e), 
-                self.bot.loop
-            )
+                await player.text_channel.send(embed=embed)
+
+    @commands.Cog.listener()
+    async def on_wavelink_inactive_player(self, player: wavelink.Player):
+        await player.disconnect()
+
+    # ── Helper embed ──────────────────────────────────────────────────────────
+
+    def _make_embed(self, player: wavelink.Player, track: wavelink.Playable) -> discord.Embed:
+        color = random.choice(list(COLORS.values()))
+        embed = discord.Embed(
+            title=f"{EMOJIS['note']} En cours — Vibes Antillaises {EMOJIS['palm']}",
+            description=f"**[{track.title}]({track.uri})**",
+            color=color,
         )
-        
-        # Créer l'interface de contrôle
-        embed = self._create_playing_embed(guild_id, track_info)
-        view = MusicPlayerView(self)
-        
-        # Mettre à jour le message existant ou en créer un nouveau
-        if existing_message:
-            player_message = await existing_message.edit(embed=embed, view=view)
-            self.player_messages[guild_id] = existing_message
-        else:
-            player_message = await message.channel.send(embed=embed, view=view)
-            self.player_messages[guild_id] = player_message
-    
-    async def _play_next(self, voice_client, text_channel, error=None):
-        """Joue la piste suivante dans la file d'attente"""
-        if error:
-            await text_channel.send(f"❌ Erreur de lecture: {error}")
-        
-        if not voice_client.is_connected():
+        if track.artwork:
+            embed.set_thumbnail(url=track.artwork)
+
+        requester = getattr(track, "requester", None)
+        embed.add_field(name=f"{EMOJIS['dancer']} Demandé par", value=requester.mention if requester else "?", inline=True)
+        embed.add_field(name=f"{EMOJIS['sun']} Durée",          value=fmt_duration(track.length), inline=True)
+        embed.add_field(name=f"{EMOJIS['wave']} Auteur",         value=track.author or "?", inline=True)
+
+        vol    = player.volume
+        mode   = player.queue.mode
+        extras = f"{EMOJIS['volume']} `{vol_bar(vol)}` {vol}%"
+        if mode == wavelink.QueueMode.loop:
+            extras += f"  {EMOJIS['loop']} Loop piste"
+        elif mode == wavelink.QueueMode.loop_all:
+            extras += f"  {EMOJIS['loop']} Loop queue"
+        embed.add_field(name="Contrôles", value=extras, inline=False)
+
+        if player.queue:
+            preview = "\n".join(
+                f"`{i+1}.` **{t.title}** — {fmt_duration(t.length)}"
+                for i, t in enumerate(list(player.queue)[:3])
+            )
+            if len(player.queue) > 3:
+                preview += f"\n… et **{len(player.queue) - 3}** autres"
+            embed.add_field(name=f"{EMOJIS['queue']} À venir", value=preview, inline=False)
+
+        embed.set_footer(text=f"{random.choice(QUOTES)} • DJ {self.bot.user.display_name}")
+        return embed
+
+    # ── Vérification vocale ───────────────────────────────────────────────────
+
+    async def _ensure_player(self, interaction: discord.Interaction) -> wavelink.Player | None:
+        if not interaction.user.voice:
+            await interaction.response.send_message(
+                f"{EMOJIS['palm']} Tu dois être dans un canal vocal!", ephemeral=True
+            )
+            return None
+        if not wavelink.Pool.nodes:
+            await interaction.response.send_message(
+                "❌ Aucun nœud Lavalink disponible. Réessaie dans quelques secondes.", ephemeral=True
+            )
+            return None
+
+        player: wavelink.Player = interaction.guild.voice_client  # type: ignore
+        if not player:
+            player = await interaction.user.voice.channel.connect(cls=wavelink.Player)
+            player.text_channel    = interaction.channel
+            player.player_message  = None
+            player.inactive_timeout = 300
+        elif player.channel != interaction.user.voice.channel:
+            await player.move_to(interaction.user.voice.channel)
+
+        return player
+
+    # ─────────────────────────────────────────────────────────────────────────
+    #  COMMANDES SLASH
+    # ─────────────────────────────────────────────────────────────────────────
+
+    @app_commands.command(name="play", description="🎵 Joue une musique (URL YouTube ou recherche)")
+    @app_commands.describe(query="Titre, URL YouTube ou lien de playlist")
+    async def play(self, interaction: discord.Interaction, query: str):
+        await interaction.response.defer(thinking=True)
+        player = await self._ensure_player(interaction)
+        if not player:
             return
-            
-        guild_id = voice_client.guild.id
-        
-        # S'il reste des pistes dans la file d'attente
-        if guild_id in self.queue and len(self.queue[guild_id]) > 0:
-            # Récupérer la prochaine piste
-            next_track = self.queue[guild_id].pop(0)
-            
-            # Mettre à jour les infos de lecture
-            self.now_playing[guild_id] = next_track
-            
-            # Créer la source audio
-            audio_source = discord.FFmpegPCMAudio(next_track['path'])
-            transformed_source = discord.PCMVolumeTransformer(audio_source, volume=self.volume[guild_id])
-            
-            # Jouer le fichier
-            voice_client.play(
-                transformed_source,
-                after=lambda e: asyncio.run_coroutine_threadsafe(
-                    self._play_next(voice_client, text_channel, error=e),
-                    self.bot.loop
-                )
+
+        try:
+            tracks = await wavelink.Playable.search(query)
+        except Exception as e:
+            logger.error(f"Erreur recherche: {e}")
+            return await interaction.followup.send(f"❌ Erreur : `{e}`", ephemeral=True)
+
+        if not tracks:
+            return await interaction.followup.send(
+                f"{EMOJIS['search']} Aucun résultat pour `{query}`", ephemeral=True
             )
-            
-            # Créer l'interface de contrôle
-            embed = self._create_playing_embed(guild_id, next_track)
-            view = MusicPlayerView(self)
-            
-            # Envoyer un nouveau message de contrôle
-            player_message = await text_channel.send(embed=embed, view=view)
-            self.player_messages[guild_id] = player_message
-        else:
-            # Supprimer l'entrée de now_playing
-            if guild_id in self.now_playing:
-                del self.now_playing[guild_id]
-                
-            # Message de fin de lecture
+
+        if isinstance(tracks, wavelink.Playlist):
+            for t in tracks.tracks:
+                t.requester = interaction.user
+            added = await player.queue.put_wait(tracks)
             embed = discord.Embed(
-                title=f"{ANTILLES_EMOJIS['beach']} Fin de la playlist tropicale",
-                description="Toutes les vibes antillaises ont été diffusées. Ajoutez plus de tracks en me mentionnant avec un fichier MP3!",
-                color=ANTILLES_COLORS["sand"]
+                title=f"{EMOJIS['palm']} Playlist ajoutée — {added} tracks",
+                description="\n".join(f"`{i+1}.` {t.title}" for i, t in enumerate(tracks.tracks[:5])) +
+                            (f"\n… et {len(tracks.tracks)-5} autres" if len(tracks.tracks) > 5 else ""),
+                color=COLORS["ocean"],
             )
-            await text_channel.send(embed=embed)
-    
-    @app_commands.command(name="queue", description="🏝️ Affiche la playlist des vibes antillaises")
-    async def queue_command(self, interaction: discord.Interaction):
-        """Affiche la file d'attente stylisée"""
-        guild_id = interaction.guild.id
-        
-        if guild_id not in self.queue or len(self.queue[guild_id]) == 0:
-            if guild_id in self.now_playing:
-                embed = discord.Embed(
-                    title=f"{ANTILLES_EMOJIS['palm']} Playlist des îles {ANTILLES_EMOJIS['sun']}",
-                    description="Aucune autre track en attente après celle-ci",
-                    color=ANTILLES_COLORS["ocean"]
-                )
-                embed.add_field(
-                    name=f"{ANTILLES_EMOJIS['note']} En cours", 
-                    value=f"**{self.now_playing[guild_id]['title']}**\nDemandé par: {self.now_playing[guild_id]['requester']}"
-                )
-                return await interaction.response.send_message(embed=embed)
-            else:
-                embed = discord.Embed(
-                    title=f"{ANTILLES_EMOJIS['beach']} Playlist vide",
-                    description="Aucune musique en attente ni en lecture.\nMentionnez-moi avec un fichier MP3 pour lancer les vibes!",
-                    color=ANTILLES_COLORS["sand"]
-                )
-                return await interaction.response.send_message(embed=embed)
-        
-        # Créer l'embed avec la liste des pistes
-        embed = discord.Embed(
-            title=f"{ANTILLES_EMOJIS['palm']} Playlist des Vibes Antillaises {ANTILLES_EMOJIS['sun']}",
-            description=f"{len(self.queue[guild_id])} tracks en attente",
-            color=ANTILLES_COLORS["turquoise"]
-        )
-        
-        # Ajouter la piste en cours
-        if guild_id in self.now_playing:
-            embed.add_field(
-                name=f"{ANTILLES_EMOJIS['note']} En cours", 
-                value=f"**{self.now_playing[guild_id]['title']}**\nDemandé par: {self.now_playing[guild_id]['requester']}",
-                inline=False
+            await interaction.followup.send(embed=embed)
+        else:
+            track = tracks[0]
+            track.requester = interaction.user
+            await player.queue.put_wait(track)
+            embed = discord.Embed(
+                title=f"{EMOJIS['pineapple']} Ajouté à la playlist",
+                description=f"**[{track.title}]({track.uri})**",
+                color=COLORS["turquoise"],
             )
-        
-        # Ajouter les pistes en attente (max 10)
-        tracks_list = ""
-        for i, track in enumerate(self.queue[guild_id][:10]):
-            tracks_list += f"{i+1}. **{track['title']}** (Demandé par: {track['requester']})\n"
-        
-        if len(self.queue[guild_id]) > 10:
-            tracks_list += f"\n... et {len(self.queue[guild_id]) - 10} autres tracks"
-            
-        embed.add_field(
-            name=f"{ANTILLES_EMOJIS['pineapple']} À venir", 
-            value=tracks_list,
-            inline=False
-        )
-        
-        # Citation aléatoire comme footer
-        embed.set_footer(text=random.choice(self.antilles_quotes))
-        
-        await interaction.response.send_message(embed=embed)
-    
-    @app_commands.command(name="leave", description="🏝️ Déconnecte le DJ des îles")
-    async def leave_command(self, interaction: discord.Interaction):
-        """Quitte le canal vocal"""
-        if not interaction.guild.voice_client:
-            return await interaction.response.send_message(f"{ANTILLES_EMOJIS['palm']} Je ne suis pas dans un canal vocal!", ephemeral=True)
-        
-        guild_id = interaction.guild.id
-        
-        # Nettoyage
-        if guild_id in self.queue:
-            self.queue[guild_id] = []
-        
-        if guild_id in self.now_playing:
-            del self.now_playing[guild_id]
-        
-        # Message d'au revoir
+            embed.add_field(name="Durée",       value=fmt_duration(track.length), inline=True)
+            embed.add_field(name="Position",    value=f"#{len(player.queue)}", inline=True)
+            embed.add_field(name="Demandé par", value=interaction.user.mention, inline=True)
+            if track.artwork:
+                embed.set_thumbnail(url=track.artwork)
+            await interaction.followup.send(embed=embed)
+
+        if not player.playing:
+            await player.play(player.queue.get())
+
+    @app_commands.command(name="pause", description="⏸️ Met en pause ou reprend la lecture")
+    async def pause(self, interaction: discord.Interaction):
+        player: wavelink.Player = interaction.guild.voice_client  # type: ignore
+        if not player:
+            return await interaction.response.send_message("❌ Pas de lecture en cours.", ephemeral=True)
+        await player.pause(not player.paused)
+        status = "en pause" if player.paused else "reprise"
+        icon   = EMOJIS["pause"] if player.paused else EMOJIS["play"]
+        await interaction.response.send_message(f"{icon} Lecture {status}.", ephemeral=True)
+
+    @app_commands.command(name="skip", description="⏭️ Passe la piste actuelle")
+    @app_commands.describe(count="Nombre de pistes à passer (défaut : 1)")
+    async def skip(self, interaction: discord.Interaction, count: int = 1):
+        player: wavelink.Player = interaction.guild.voice_client  # type: ignore
+        if not player or not player.playing:
+            return await interaction.response.send_message("❌ Rien à passer.", ephemeral=True)
+        count = max(1, min(count, len(player.queue) + 1))
+        for _ in range(count - 1):
+            try:
+                player.queue.get()
+            except wavelink.QueueEmpty:
+                break
+        await player.skip(force=True)
+        await interaction.response.send_message(f"{EMOJIS['skip']} {count} piste(s) passée(s).", ephemeral=True)
+
+    @app_commands.command(name="stop", description="⏹️ Arrête la lecture et vide la file")
+    async def stop(self, interaction: discord.Interaction):
+        player: wavelink.Player = interaction.guild.voice_client  # type: ignore
+        if not player:
+            return await interaction.response.send_message("❌ Pas de lecture en cours.", ephemeral=True)
+        player.queue.clear()
+        await player.stop()
+        await interaction.response.send_message(f"{EMOJIS['stop']} Lecture stoppée et file vidée.", ephemeral=True)
+
+    @app_commands.command(name="leave", description="👋 Déconnecte le bot du canal vocal")
+    async def leave(self, interaction: discord.Interaction):
+        player: wavelink.Player = interaction.guild.voice_client  # type: ignore
+        if not player:
+            return await interaction.response.send_message("❌ Je ne suis pas en vocal.", ephemeral=True)
+        player.queue.clear()
+        await player.disconnect()
         embed = discord.Embed(
-            title=f"{ANTILLES_EMOJIS['wave']} À bientôt! {ANTILLES_EMOJIS['sun']}",
-            description="Le DJ des îles quitte la scène. Mentionnez-moi avec un MP3 pour retrouver l'ambiance Antillaise!",
-            color=ANTILLES_COLORS["sunset"]
+            title=f"{EMOJIS['wave']} À bientôt! {EMOJIS['sun']}",
+            description="Le DJ des îles quitte la scène. `/play` pour relancer!",
+            color=COLORS["sunset"],
         )
-        
-        # Déconnexion
-        await interaction.guild.voice_client.disconnect()
         await interaction.response.send_message(embed=embed)
 
-# Fonction setup requise pour charger l'extension
-def setup(bot):
-    bot.add_cog(MP3PlayerAntilles(bot))
+    @app_commands.command(name="queue", description="📋 Affiche la file d'attente")
+    @app_commands.describe(page="Page de la file (défaut : 1)")
+    async def queue_cmd(self, interaction: discord.Interaction, page: int = 1):
+        player: wavelink.Player = interaction.guild.voice_client  # type: ignore
+        if not player or (not player.current and not player.queue):
+            return await interaction.response.send_message(
+                f"{EMOJIS['beach']} La file est vide. Utilisez `/play`!", ephemeral=True
+            )
+        per_page = 10
+        queue    = list(player.queue)
+        total    = len(queue)
+        pages    = max(1, -(-total // per_page))
+        page     = max(1, min(page, pages))
+        start    = (page - 1) * per_page
+
+        embed = discord.Embed(title=f"{EMOJIS['palm']} Playlist Antillaise {EMOJIS['sun']}", color=COLORS["turquoise"])
+        if player.current:
+            embed.add_field(
+                name=f"{EMOJIS['note']} En cours",
+                value=f"**[{player.current.title}]({player.current.uri})** — {fmt_duration(player.current.length)}",
+                inline=False,
+            )
+        if queue:
+            lines = [
+                f"`{start+i+1}.` **{t.title}** — {fmt_duration(t.length)}"
+                for i, t in enumerate(queue[start:start+per_page])
+            ]
+            embed.add_field(
+                name=f"{EMOJIS['queue']} À venir ({total}) — page {page}/{pages}",
+                value="\n".join(lines),
+                inline=False,
+            )
+            total_ms = sum(t.length or 0 for t in queue)
+            embed.set_footer(text=f"Durée totale : {fmt_duration(total_ms)} • {random.choice(QUOTES)}")
+        else:
+            embed.add_field(name="À venir", value="Aucune track en attente.", inline=False)
+        await interaction.response.send_message(embed=embed)
+
+    @app_commands.command(name="nowplaying", description="🎵 Affiche la piste en cours")
+    async def nowplaying(self, interaction: discord.Interaction):
+        player: wavelink.Player = interaction.guild.voice_client  # type: ignore
+        if not player or not player.current:
+            return await interaction.response.send_message("❌ Rien en cours de lecture.", ephemeral=True)
+        embed = self._make_embed(player, player.current)
+        view  = PlayerView(self, interaction.guild.id)
+        await interaction.response.send_message(embed=embed, view=view)
+
+    @app_commands.command(name="volume", description="🔊 Règle le volume (0-100)")
+    @app_commands.describe(level="Niveau entre 0 et 100")
+    async def volume(self, interaction: discord.Interaction, level: int):
+        if not 0 <= level <= 100:
+            return await interaction.response.send_message("❌ Volume entre 0 et 100.", ephemeral=True)
+        player: wavelink.Player = interaction.guild.voice_client  # type: ignore
+        if not player:
+            return await interaction.response.send_message("❌ Pas de lecture en cours.", ephemeral=True)
+        await player.set_volume(level)
+        await interaction.response.send_message(
+            f"{EMOJIS['volume']} `{vol_bar(level)}` **{level}%**", ephemeral=True
+        )
+
+    @app_commands.command(name="loop", description="🔁 Cycle des modes (off → piste → queue)")
+    async def loop_cmd(self, interaction: discord.Interaction):
+        player: wavelink.Player = interaction.guild.voice_client  # type: ignore
+        if not player:
+            return await interaction.response.send_message("❌ Pas de lecture en cours.", ephemeral=True)
+        mode = player.queue.mode
+        if mode == wavelink.QueueMode.normal:
+            player.queue.mode = wavelink.QueueMode.loop
+            label = "🔂 Loop piste activé"
+        elif mode == wavelink.QueueMode.loop:
+            player.queue.mode = wavelink.QueueMode.loop_all
+            label = "🔁 Loop queue activé"
+        else:
+            player.queue.mode = wavelink.QueueMode.normal
+            label = "❌ Boucle désactivée"
+        await interaction.response.send_message(label, ephemeral=True)
+
+    @app_commands.command(name="shuffle", description="🔀 Mélange la file d'attente")
+    async def shuffle_cmd(self, interaction: discord.Interaction):
+        player: wavelink.Player = interaction.guild.voice_client  # type: ignore
+        if not player or not player.queue:
+            return await interaction.response.send_message("❌ La file est vide.", ephemeral=True)
+        player.queue.shuffle()
+        await interaction.response.send_message(f"{EMOJIS['shuffle']} File mélangée!", ephemeral=True)
+
+    @app_commands.command(name="remove", description="🗑️ Retire une piste de la file")
+    @app_commands.describe(position="Position dans la file (voir /queue)")
+    async def remove(self, interaction: discord.Interaction, position: int):
+        player: wavelink.Player = interaction.guild.voice_client  # type: ignore
+        if not player:
+            return await interaction.response.send_message("❌ Pas de lecture en cours.", ephemeral=True)
+        queue = list(player.queue)
+        if position < 1 or position > len(queue):
+            return await interaction.response.send_message(
+                f"❌ Position invalide. La file a {len(queue)} piste(s).", ephemeral=True
+            )
+        track = queue[position - 1]
+        del player.queue[position - 1]
+        await interaction.response.send_message(
+            f"{EMOJIS['stop']} **{track.title}** retiré de la file.", ephemeral=True
+        )
+
+    @app_commands.command(name="clearqueue", description="🗑️ Vide la file d'attente")
+    async def clearqueue(self, interaction: discord.Interaction):
+        player: wavelink.Player = interaction.guild.voice_client  # type: ignore
+        if not player:
+            return await interaction.response.send_message("❌ Pas de lecture en cours.", ephemeral=True)
+        count = len(player.queue)
+        player.queue.clear()
+        await interaction.response.send_message(
+            f"{EMOJIS['stop']} {count} piste(s) retirée(s) de la file.", ephemeral=True
+        )
+
+    @app_commands.command(name="join", description="🎤 Connecte le bot à ton canal vocal")
+    async def join(self, interaction: discord.Interaction):
+        if not interaction.user.voice:
+            return await interaction.response.send_message(
+                f"{EMOJIS['palm']} Tu dois être dans un canal vocal!", ephemeral=True
+            )
+        player: wavelink.Player = interaction.guild.voice_client  # type: ignore
+        if player:
+            await player.move_to(interaction.user.voice.channel)
+        else:
+            player = await interaction.user.voice.channel.connect(cls=wavelink.Player)
+            player.text_channel   = interaction.channel
+            player.player_message = None
+        await interaction.response.send_message(
+            f"{EMOJIS['note']} Connecté à **{interaction.user.voice.channel.name}**!", ephemeral=True
+        )
+
+
+# ─────────────────────────────────────────────
+#  SETUP
+# ─────────────────────────────────────────────
+
+async def setup(bot: commands.Bot):
+    await bot.add_cog(MusicCog(bot))
