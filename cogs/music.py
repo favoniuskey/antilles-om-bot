@@ -292,7 +292,7 @@ class MusicCog(commands.Cog, name="Musique"):
                 f"{EMOJIS['palm']} Tu dois être dans un canal vocal!", ephemeral=True
             )
             return None
-        if not any(n.connected for n in wavelink.Pool.nodes.values()):
+        if not any(n.status == wavelink.NodeStatus.CONNECTED for n in wavelink.Pool.nodes.values()):
             await interaction.followup.send(
                 "❌ Aucun nœud Lavalink disponible. Réessaie dans quelques secondes.", ephemeral=True
             )
@@ -536,7 +536,7 @@ class MusicCog(commands.Cog, name="Musique"):
                 f"{EMOJIS['palm']} Tu dois être dans un canal vocal!", ephemeral=True
             )
         await interaction.response.defer(ephemeral=True)
-        if not any(n.connected for n in wavelink.Pool.nodes.values()):
+        if not any(n.status == wavelink.NodeStatus.CONNECTED for n in wavelink.Pool.nodes.values()):
             return await interaction.followup.send(
                 "❌ Aucun nœud Lavalink disponible. Réessaie dans quelques secondes.", ephemeral=True
             )
