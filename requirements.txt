@@ -9,3 +9,4 @@ PyNaCl
 wavelink==3.2.0
 openpyxl
 yt-dlp
+devey
