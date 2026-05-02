@@ -288,12 +288,12 @@ class MusicCog(commands.Cog, name="Musique"):
 
     async def _ensure_player(self, interaction: discord.Interaction) -> wavelink.Player | None:
         if not interaction.user.voice:
-            await interaction.response.send_message(
+            await interaction.followup.send(
                 f"{EMOJIS['palm']} Tu dois être dans un canal vocal!", ephemeral=True
             )
             return None
-        if not wavelink.Pool.nodes:
-            await interaction.response.send_message(
+        if not any(n.connected for n in wavelink.Pool.nodes.values()):
+            await interaction.followup.send(
                 "❌ Aucun nœud Lavalink disponible. Réessaie dans quelques secondes.", ephemeral=True
             )
             return None
@@ -536,6 +536,10 @@ class MusicCog(commands.Cog, name="Musique"):
                 f"{EMOJIS['palm']} Tu dois être dans un canal vocal!", ephemeral=True
             )
         await interaction.response.defer(ephemeral=True)
+        if not any(n.connected for n in wavelink.Pool.nodes.values()):
+            return await interaction.followup.send(
+                "❌ Aucun nœud Lavalink disponible. Réessaie dans quelques secondes.", ephemeral=True
+            )
         try:
             player: wavelink.Player = interaction.guild.voice_client  # type: ignore
             if player:
