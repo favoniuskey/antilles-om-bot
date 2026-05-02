@@ -63,10 +63,14 @@ QUOTES = [
 # ─────────────────────────────────────────────
 
 LAVALINK_NODES = [
-    {"uri": "http://lavalink.clxud.xyz:2333",    "password": "youshallnotpass"},
-    {"uri": "http://lavalink.oops.wtf:80",        "password": "www.freelavalink.ga"},
-    {"uri": "http://lavalink.devz.cloud:80",      "password": "mathiscool"},
-    {"uri": "http://lavalink1.alfateam.tech:443", "password": "alfateamlavalink"},
+    # lavalink.jirayu.net — 99.91% uptime, 179j+ de fonctionnement
+    {"uri": "http://lavalink.jirayu.net:13592", "password": "youshallnotpass"},
+    # serenetia — nœud v4, SSL disponible
+    {"uri": "http://lavalinkv4.serenetia.com:80", "password": "https://dsc.gg/ajidevserver"},
+    # nexcloud — 99.88% uptime vérifié
+    {"uri": "http://n3.nexcloud.in:2026", "password": "nexcloud"},
+    # vexanode — 99.97% uptime vérifié
+    {"uri": "http://omega.vexanode.cloud:2031", "password": "https://discord.vexanode.cloud"},
 ]
 
 
