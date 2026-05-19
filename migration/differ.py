@@ -227,6 +227,10 @@ def _diff_category(guild: discord.Guild, target_cat: dict, warnings: list[str]) 
             warnings.append(f"Catégorie existante `{name}` introuvable.")
             kind = "create"
             reason = "marquée existing mais introuvable"
+        elif existing.name != name:
+            # Existing avec nom différent → force le rename
+            kind = "rename"
+            reason = f"renommer depuis `{existing.name}` (nom non conforme à V2)"
         else:
             kind = "update_overrides"
             reason = "ajustement overrides"

@@ -283,6 +283,116 @@ class StructureGuard(commands.Cog):
         await interaction.followup.send(f"✅ Salon `#{ch.name}` créé dans `{parent.name}`", ephemeral=True)
 
     # ------------------------------------------------------------------
+    # /structure fix-category-names
+    # ------------------------------------------------------------------
+
+    @structure.command(
+        name="fix-category-names",
+        description="Renomme les catégories existantes selon les noms V2",
+    )
+    @require_governance()
+    async def fix_category_names(self, interaction: discord.Interaction) -> None:
+        await interaction.response.defer(ephemeral=True, thinking=True)
+        guild = interaction.guild
+        target = load_target()
+        renamed: list[tuple[str, str]] = []
+        skipped: list[str] = []
+        for cat_spec in target.get("categories", []):
+            target_name = cat_spec.get("name")
+            cat = None
+            if cat_spec.get("existing_id"):
+                cat = guild.get_channel(int(cat_spec["existing_id"]))
+                if not isinstance(cat, discord.CategoryChannel):
+                    cat = None
+            if cat is None and cat_spec.get("old_name"):
+                cat = discord.utils.get(guild.categories, name=cat_spec["old_name"])
+            if cat is None:
+                cat = discord.utils.get(guild.categories, name=target_name)
+            if cat is None:
+                continue
+            if cat.name == target_name:
+                continue
+            old = cat.name
+            try:
+                await cat.edit(name=target_name, reason="Fix V2 — nom de catégorie")
+                renamed.append((old, target_name))
+            except discord.Forbidden:
+                skipped.append(old)
+
+        lines = []
+        if renamed:
+            lines.append(f"✅ **{len(renamed)} catégories renommées** :")
+            for old, new in renamed:
+                lines.append(f"• `{old}` → `{new}`")
+        else:
+            lines.append("ℹ️ Toutes les catégories sont déjà au bon nom.")
+        if skipped:
+            lines.append(f"\n⚠️ Permission refusée pour : {', '.join(skipped)}")
+        await interaction.followup.send("\n".join(lines), ephemeral=True)
+
+    # ------------------------------------------------------------------
+    # /structure restore-channels
+    # ------------------------------------------------------------------
+
+    # Mapping fixe : salons archivés par erreur (vocaux et forums)
+    # à remettre dans leur catégorie V2 logique.
+    _RESTORE_MAPPING: dict[str, str] = {
+        "1454596719508717568": "💬 ▸ COMMUNAUTÉ",   # 🌴 Créer ton salon (voice)
+        "1228496187208761444": "💬 ▸ COMMUNAUTÉ",   # 🔊・Général (voice)
+        "1228497793211957358": "💬 ▸ COMMUNAUTÉ",   # 🔊・Coin contrôleurs (voice)
+        "1228497842482446376": "💬 ▸ COMMUNAUTÉ",   # 🔊・Coin pilotes (voice)
+        "1307863639327244318": "💬 ▸ COMMUNAUTÉ",   # 📋 💡・suggestions (forum)
+        "1228751101164126360": "🎫 ▸ SUPPORT",      # 📋 ❓・aide (forum)
+        "1228753256050593926": "📚 ▸ DOCUMENTATION", # 📋 ✅・notams-updates (forum)
+        "1414656319105007637": "✈️ ▸ FLY TROPIK",   # 🔊 Discussion FLYTROPIK (voice)
+    }
+
+    @structure.command(
+        name="restore-channels",
+        description="Sort de _archive les vocaux/forums utiles vers leur catégorie V2",
+    )
+    @require_governance()
+    async def restore_channels(self, interaction: discord.Interaction) -> None:
+        await interaction.response.defer(ephemeral=True, thinking=True)
+        guild = interaction.guild
+        moved: list[tuple[str, str]] = []
+        not_found: list[str] = []
+        forbidden: list[str] = []
+        for ch_id, target_cat_name in self._RESTORE_MAPPING.items():
+            ch = guild.get_channel(int(ch_id))
+            if ch is None:
+                not_found.append(ch_id)
+                continue
+            target_cat = discord.utils.get(guild.categories, name=target_cat_name)
+            if target_cat is None:
+                not_found.append(f"cat:{target_cat_name}")
+                continue
+            if ch.category and ch.category.id == target_cat.id:
+                continue
+            try:
+                await ch.edit(
+                    category=target_cat,
+                    sync_permissions=True,
+                    reason="Restauration salon archivé par erreur",
+                )
+                moved.append((ch.name, target_cat_name))
+            except discord.Forbidden:
+                forbidden.append(ch.name)
+
+        lines = []
+        if moved:
+            lines.append(f"✅ **{len(moved)} salons restaurés** :")
+            for ch_name, cat_name in moved:
+                lines.append(f"• `{ch_name}` → {cat_name}")
+        else:
+            lines.append("ℹ️ Aucun salon à restaurer (déjà tous au bon endroit).")
+        if not_found:
+            lines.append(f"\n⚠️ Introuvables : {', '.join(not_found)}")
+        if forbidden:
+            lines.append(f"\n⚠️ Permission refusée : {', '.join(forbidden)}")
+        await interaction.followup.send("\n".join(lines), ephemeral=True)
+
+    # ------------------------------------------------------------------
     # /structure fix-positions
     # ------------------------------------------------------------------
 
