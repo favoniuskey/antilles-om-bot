@@ -169,10 +169,12 @@ async def on_command_error(ctx, error):
 @bot.command(name="syncsrv", hidden=True)
 @commands.has_any_role(*ADMIN_ROLES)
 async def sync_server_command(ctx):
-    """Synchronise les commandes slash."""
+    """Synchronise les commandes slash (copie global → guild pour instantanéité)."""
     try:
         await ctx.message.delete()
         guild = discord.Object(id=GUILD_ID)
+        # Copier les commandes globales vers la guild = sync instantané sur ce serveur
+        bot.tree.copy_global_to(guild=guild)
         synced = await bot.tree.sync(guild=guild)
         confirmation = await ctx.send(f"✅ {len(synced)} commandes synchronisées")
         logger.info(f"Commandes sync: {len(synced)}")
