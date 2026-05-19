@@ -1,0 +1,573 @@
+{
+  "_metadata": {
+    "version": "2.0",
+    "description": "Refonte architecture Discord Les Antilles - OM, cible V2",
+    "guild_id": "1224706989146378371",
+    "guild_name": "🌴 Les Antilles - OM 🌴",
+    "archive_category_name": "🗄️ ▸ _archive",
+    "archive_if_not_in_target": true,
+    "doc_reference": "refonte_architecture_antilles_om_v2_complete.pdf"
+  },
+
+  "_perm_format_note": "Format compact : 'permissions' = liste des perms à TRUE (les autres sont implicitement false). 'overrides' utilise allow/deny listes.",
+
+  "roles": [
+    {
+      "_block": "Gouvernance",
+      "name": "Directeur communauté",
+      "_origin": "new",
+      "color": 11027200,
+      "hoist": true,
+      "mentionable": false,
+      "position_rel": 100,
+      "permissions": ["administrator"],
+      "_note": "1 à 3 personnes max. Pilotage global, arbitrage, vision."
+    },
+    {
+      "_block": "Gouvernance",
+      "name": "Administrateur",
+      "_origin": "existing",
+      "existing_id": "1406737885230792869",
+      "color": 15816207,
+      "hoist": true,
+      "mentionable": false,
+      "position_rel": 95,
+      "permissions": [
+        "manage_guild", "manage_roles", "manage_channels",
+        "kick_members", "ban_members", "moderate_members",
+        "manage_messages", "manage_webhooks", "manage_threads",
+        "manage_events", "view_audit_log", "mention_everyone",
+        "create_instant_invite"
+      ],
+      "_note": "Pas d'Administrator selon V2 — seul Directeur communauté garde le flag complet."
+    },
+
+    {
+      "_block": "Pôles opérationnels",
+      "name": "Responsable événements",
+      "_origin": "rename",
+      "existing_id": "1316108822086942770",
+      "old_name": "Pôle évènement",
+      "color": 11027200,
+      "hoist": true,
+      "mentionable": true,
+      "position_rel": 80,
+      "permissions": ["manage_events", "create_events", "create_instant_invite", "mention_everyone"],
+      "_note": "Anime vols de groupe, concours, annonces d'événements."
+    },
+    {
+      "_block": "Pôles opérationnels",
+      "name": "Responsable aviation",
+      "_origin": "new",
+      "color": 2067276,
+      "hoist": true,
+      "mentionable": true,
+      "position_rel": 78,
+      "permissions": ["create_instant_invite", "manage_threads"],
+      "_note": "Structure le pôle contrôle/pilote, briefings, créneaux ATC."
+    },
+    {
+      "_block": "Pôles opérationnels",
+      "name": "Responsable communauté",
+      "_origin": "new",
+      "color": 3066993,
+      "hoist": true,
+      "mentionable": true,
+      "position_rel": 76,
+      "permissions": ["manage_messages", "manage_threads", "create_instant_invite"],
+      "_note": "Suit la vie du serveur hors modération."
+    },
+    {
+      "_block": "Pôles opérationnels",
+      "name": "Responsable documentation",
+      "_origin": "new",
+      "color": 15105570,
+      "hoist": true,
+      "mentionable": true,
+      "position_rel": 74,
+      "permissions": ["manage_threads", "manage_webhooks"],
+      "_note": "Tient à jour la base documentaire (phraséologie, notams, docs aviation)."
+    },
+    {
+      "_block": "Pôles opérationnels",
+      "name": "Responsable partenariats",
+      "_origin": "new",
+      "color": 15844367,
+      "hoist": true,
+      "mentionable": true,
+      "position_rel": 72,
+      "permissions": ["manage_webhooks", "create_instant_invite"],
+      "_note": "Facultatif selon V2 §3.2 — créé tel que validé."
+    },
+
+    {
+      "_block": "Modération",
+      "name": "Modérateur",
+      "_origin": "existing",
+      "existing_id": "1297148016725332068",
+      "color": 10382335,
+      "hoist": true,
+      "mentionable": false,
+      "position_rel": 70,
+      "permissions": [
+        "kick_members", "ban_members", "moderate_members",
+        "manage_messages", "manage_threads", "move_members",
+        "mute_members", "deafen_members",
+        "view_audit_log", "mention_everyone", "create_instant_invite"
+      ],
+      "_note": "Pas de Manage Server selon V2 §3.3."
+    },
+    {
+      "_block": "Modération",
+      "name": "Helper",
+      "_origin": "existing",
+      "existing_id": "1309969291822760038",
+      "color": 11156283,
+      "hoist": false,
+      "mentionable": false,
+      "position_rel": 60,
+      "permissions": [
+        "manage_messages", "moderate_members",
+        "move_members", "create_instant_invite", "manage_threads"
+      ],
+      "_note": "Accueil/aide/orientation, pas de perms structurelles."
+    },
+    {
+      "_block": "Modération",
+      "name": "Responsable accueil",
+      "_origin": "existing",
+      "existing_id": "1267131957649870911",
+      "color": 0,
+      "hoist": false,
+      "mentionable": false,
+      "position_rel": 55,
+      "permissions": [
+        "kick_members", "ban_members",
+        "manage_messages", "manage_threads", "move_members",
+        "mute_members", "deafen_members",
+        "view_audit_log", "mention_everyone", "create_instant_invite"
+      ],
+      "_note": "Existant. Fusion éventuelle avec Helper à arbitrer plus tard."
+    },
+
+    {
+      "_block": "Technique",
+      "name": "Antilles - Outre Mer",
+      "_origin": "existing",
+      "_protected": true,
+      "existing_id": "1310012714583719999",
+      "_note": "Bot principal Antilles-OM. Exception V2 §3.4 — Administrator conservé car le code l'exige. JAMAIS modifié par le script."
+    },
+    {
+      "_block": "Technique",
+      "name": "BOTS",
+      "_origin": "existing",
+      "existing_id": "1228487804615655446",
+      "color": 15277667,
+      "hoist": true,
+      "mentionable": true,
+      "position_rel": 40,
+      "permissions": [],
+      "_note": "V2 §5.3 : Administrator retiré. Permissions ciblées par overrides de salon uniquement."
+    },
+    {
+      "_block": "Technique",
+      "name": "Dyno",
+      "_origin": "existing",
+      "_protected": true,
+      "existing_id": "1268609740280430675",
+      "_note": "Bot-managed (Discord API ne permet pas de modifier le rôle lui-même). Perms ajustées via overrides de salons."
+    },
+    {
+      "_block": "Technique",
+      "name": "Streamcord",
+      "_origin": "existing",
+      "_protected": true,
+      "existing_id": "1305253724188311676"
+    },
+    {
+      "_block": "Technique",
+      "name": "NotifyMe",
+      "_origin": "existing",
+      "_protected": true,
+      "existing_id": "1346201678176849965"
+    },
+    {
+      "_block": "Technique",
+      "name": "Lara✨",
+      "_origin": "existing",
+      "_protected": true,
+      "existing_id": "1387147385293111481"
+    },
+    {
+      "_block": "Technique",
+      "name": "SporkMP3",
+      "_origin": "existing",
+      "_protected": true,
+      "existing_id": "1361788619123196129"
+    },
+    {
+      "_block": "Technique",
+      "name": "Antilles - Assistance",
+      "_origin": "existing",
+      "_protected": true,
+      "existing_id": "1315631550016262277"
+    },
+    {
+      "_block": "Technique",
+      "name": "Muted",
+      "_origin": "existing",
+      "existing_id": "1502725895071465564",
+      "color": 0,
+      "hoist": false,
+      "mentionable": false,
+      "position_rel": 5,
+      "permissions": [],
+      "_note": "Restriction technique. Voit les salons mais ne peut pas écrire/parler — appliqué via overrides."
+    },
+
+    {
+      "_block": "Communauté - Aviation",
+      "name": "Pilote",
+      "_origin": "existing",
+      "existing_id": "1228450820874567690",
+      "color": 361625,
+      "hoist": false,
+      "mentionable": false,
+      "position_rel": 30,
+      "permissions": []
+    },
+    {
+      "_block": "Communauté - Aviation",
+      "name": "Contrôleur",
+      "_origin": "existing",
+      "existing_id": "1228450258254827691",
+      "color": 2067276,
+      "hoist": false,
+      "mentionable": false,
+      "position_rel": 31,
+      "permissions": []
+    },
+    {
+      "_block": "Communauté - Aviation",
+      "name": "AFIS",
+      "_origin": "existing",
+      "existing_id": "1229500248351707278",
+      "color": 15158332,
+      "hoist": false,
+      "mentionable": false,
+      "position_rel": 29,
+      "permissions": []
+    },
+    {
+      "_block": "Communauté - Aviation",
+      "name": "Débutant",
+      "_origin": "existing",
+      "existing_id": "1229498213174870138",
+      "color": 15105570,
+      "hoist": false,
+      "mentionable": false,
+      "position_rel": 28,
+      "permissions": []
+    },
+    {
+      "_block": "Communauté - Aviation",
+      "name": "Staff IVAO",
+      "_origin": "existing",
+      "existing_id": "1342914566241128530",
+      "color": 7419530,
+      "hoist": false,
+      "mentionable": false,
+      "position_rel": 32,
+      "permissions": ["connect", "mute_members", "deafen_members", "move_members", "moderate_members"]
+    },
+
+    {
+      "_block": "Communauté - Géographie",
+      "name": "Martinique",
+      "_origin": "existing",
+      "existing_id": "1229498274634006528",
+      "color": 3066993,
+      "hoist": false,
+      "mentionable": false,
+      "position_rel": 25,
+      "permissions": []
+    },
+    {
+      "_block": "Communauté - Géographie",
+      "name": "Cayenne",
+      "_origin": "existing",
+      "existing_id": "1229498324403490867",
+      "color": 2067276,
+      "hoist": false,
+      "mentionable": false,
+      "position_rel": 24,
+      "permissions": []
+    },
+    {
+      "_block": "Communauté - Géographie",
+      "name": "Le Raizet",
+      "_origin": "existing",
+      "existing_id": "1229496535583035433",
+      "color": 2067276,
+      "hoist": false,
+      "mentionable": false,
+      "position_rel": 23,
+      "permissions": []
+    },
+
+    {
+      "_block": "Communauté - Distinction",
+      "name": "Gagnant Concours Photos",
+      "_origin": "existing",
+      "existing_id": "1416540381520334960",
+      "color": 15844367,
+      "hoist": true,
+      "mentionable": false,
+      "position_rel": 20,
+      "permissions": []
+    },
+    {
+      "_block": "Communauté - Distinction",
+      "name": "Server Booster",
+      "_origin": "existing",
+      "existing_id": "1230281547832098858",
+      "color": 16023551,
+      "hoist": false,
+      "mentionable": false,
+      "position_rel": 19,
+      "permissions": []
+    },
+    {
+      "_block": "Communauté - Distinction",
+      "name": "TPK",
+      "_origin": "existing",
+      "existing_id": "1414653205257912431",
+      "color": 10181046,
+      "hoist": false,
+      "mentionable": false,
+      "position_rel": 18,
+      "permissions": ["priority_speaker"]
+    },
+
+    {
+      "_block": "Accès",
+      "name": "Membre",
+      "_origin": "existing",
+      "existing_id": "1228453165016285246",
+      "color": 1752220,
+      "hoist": true,
+      "mentionable": false,
+      "position_rel": 10,
+      "permissions": [],
+      "_note": "Rôle pivot V2. Toutes les perms sont gérées via overrides de catégorie."
+    },
+    {
+      "_block": "Accès",
+      "name": "Non vérifié",
+      "_origin": "existing",
+      "existing_id": "1367318833693720587",
+      "color": 0,
+      "hoist": false,
+      "mentionable": false,
+      "position_rel": 2,
+      "permissions": [],
+      "_note": "Sas d'entrée. Voit uniquement Accueil + Support."
+    },
+
+    {
+      "_block": "À arbitrer",
+      "name": "Super-Admin",
+      "_origin": "existing",
+      "existing_id": "1297138129920196639",
+      "_note": "Rôle existant à clarifier — doublon potentiel avec Directeur communauté. Conservé tel quel, signalé dans rapport."
+    },
+    {
+      "_block": "À arbitrer",
+      "name": ".\\",
+      "_origin": "existing",
+      "existing_id": "1309309507738013786",
+      "_note": "Finalité non documentée. Conservé tel quel, signalé dans rapport."
+    },
+
+    {
+      "_block": "Système",
+      "name": "@everyone",
+      "_origin": "existing",
+      "existing_id": "1224706989146378371",
+      "permissions": [
+        "create_instant_invite", "change_nickname", "use_application_commands"
+      ],
+      "_note": "V2 §5.1 : accès minimal. Lecture/écriture par défaut retirées, gérées par overrides de catégorie."
+    }
+  ],
+
+  "categories": [
+    {
+      "name": "👋 ▸ ACCUEIL",
+      "_origin": "existing",
+      "existing_id": "1228669224579502211",
+      "position": 0,
+      "overrides": {
+        "@everyone": {"deny": ["view_channel"]},
+        "Non vérifié": {"allow": ["view_channel", "read_message_history"], "deny": ["send_messages"]},
+        "Membre": {"allow": ["view_channel", "read_message_history"], "deny": ["send_messages"]}
+      },
+      "channels": [
+        {"name": "bienvenue", "type": "text", "_origin": "auto"},
+        {"name": "règlement", "type": "text", "_origin": "auto"},
+        {"name": "présentation", "type": "text", "_origin": "auto", "overrides": {"Non vérifié": {"allow": ["send_messages"]}, "Membre": {"allow": ["send_messages"]}}}
+      ]
+    },
+    {
+      "name": "🌠 ▸ INFORMATIONS",
+      "_origin": "existing",
+      "existing_id": "1228453752126570616",
+      "position": 1,
+      "overrides": {
+        "@everyone": {"deny": ["view_channel"]},
+        "Non vérifié": {"deny": ["view_channel"]},
+        "Membre": {"allow": ["view_channel", "read_message_history"], "deny": ["send_messages"]},
+        "Modérateur": {"allow": ["send_messages"]},
+        "Responsable événements": {"allow": ["send_messages"]}
+      },
+      "channels": [
+        {"name": "annonces", "type": "text", "_origin": "auto"},
+        {"name": "changelog", "type": "text", "_origin": "auto"},
+        {"name": "partenaires", "type": "text", "_origin": "auto"},
+        {"name": "statistiques-atc", "type": "text", "_origin": "auto"},
+        {"name": "statistiques-trafics", "type": "text", "_origin": "auto"}
+      ]
+    },
+    {
+      "name": "💬 ▸ COMMUNAUTÉ",
+      "_origin": "rename",
+      "existing_id": "1224706989146378373",
+      "old_name": "💬▸Général",
+      "position": 2,
+      "overrides": {
+        "@everyone": {"deny": ["view_channel"]},
+        "Non vérifié": {"deny": ["view_channel"]},
+        "Membre": {"allow": ["view_channel", "send_messages", "read_message_history", "attach_files", "embed_links", "add_reactions"]},
+        "Modérateur": {"allow": ["manage_messages", "manage_channels", "mention_everyone"]},
+        "Responsable communauté": {"allow": ["manage_messages"]},
+        "Muted": {"deny": ["send_messages", "speak", "add_reactions", "send_messages_in_threads"]}
+      },
+      "channels": [
+        {"name": "général", "type": "text", "_origin": "auto"},
+        {"name": "coin-créole", "type": "text", "_origin": "auto"},
+        {"name": "screenshots-médias", "type": "text", "_origin": "auto"},
+        {"name": "concours-screenshots", "type": "text", "_origin": "auto"},
+        {"name": "suggestions", "type": "text", "_origin": "auto"},
+        {"name": "vols-de-groupe", "type": "text", "_origin": "auto"}
+      ]
+    },
+    {
+      "name": "🛠️ ▸ OUTILS ATC / BOT",
+      "_origin": "new",
+      "position": 3,
+      "overrides": {
+        "@everyone": {"deny": ["view_channel"]},
+        "Non vérifié": {"deny": ["view_channel"]},
+        "Membre": {"allow": ["view_channel", "read_message_history"], "deny": ["send_messages"]},
+        "Antilles - Outre Mer": {"allow": ["view_channel", "send_messages", "manage_messages", "embed_links", "attach_files"]},
+        "Modérateur": {"allow": ["send_messages", "manage_messages"]}
+      },
+      "channels": [
+        {"name": "positions-atc", "type": "text", "_origin": "auto"},
+        {"name": "booking-atc", "type": "text", "_origin": "auto"},
+        {"name": "request-metar", "type": "text", "_origin": "auto", "overrides": {"Membre": {"allow": ["send_messages"]}}},
+        {"name": "cmd-bot", "type": "text", "_origin": "auto", "overrides": {"Membre": {"allow": ["send_messages"]}}}
+      ]
+    },
+    {
+      "name": "🎫 ▸ SUPPORT",
+      "_origin": "rename",
+      "existing_id": "1314609657284657275",
+      "old_name": "Demandes/Assistances",
+      "position": 4,
+      "overrides": {
+        "@everyone": {"deny": ["view_channel"]},
+        "Non vérifié": {"allow": ["view_channel", "read_message_history", "send_messages"]},
+        "Membre": {"allow": ["view_channel", "send_messages", "read_message_history"]},
+        "Helper": {"allow": ["manage_messages", "manage_threads"]},
+        "Modérateur": {"allow": ["manage_messages", "manage_channels", "manage_threads"]}
+      },
+      "channels": [
+        {"name": "ticket-support", "type": "text", "_origin": "auto"},
+        {"name": "ticket-atc", "type": "text", "_origin": "auto"},
+        {"name": "questions", "type": "text", "_origin": "auto"},
+        {"name": "aide", "type": "text", "_origin": "auto"}
+      ]
+    },
+    {
+      "name": "📚 ▸ DOCUMENTATION",
+      "_origin": "new",
+      "position": 5,
+      "overrides": {
+        "@everyone": {"deny": ["view_channel"]},
+        "Non vérifié": {"deny": ["view_channel"]},
+        "Membre": {"allow": ["view_channel", "read_message_history"], "deny": ["send_messages"]},
+        "Responsable documentation": {"allow": ["send_messages", "manage_messages", "manage_threads", "manage_webhooks"]},
+        "Modérateur": {"allow": ["send_messages", "manage_messages"]}
+      },
+      "channels": [
+        {"name": "martinique-guadeloupe", "type": "text", "_origin": "auto"},
+        {"name": "piarco-fir", "type": "text", "_origin": "auto"},
+        {"name": "guyane", "type": "text", "_origin": "auto"},
+        {"name": "afis", "type": "text", "_origin": "auto"},
+        {"name": "ivao-phraséologie", "type": "text", "_origin": "auto"},
+        {"name": "notams-updates", "type": "text", "_origin": "auto"}
+      ]
+    },
+    {
+      "name": "🛡️ ▸ STAFF",
+      "_origin": "new",
+      "position": 6,
+      "overrides": {
+        "@everyone": {"deny": ["view_channel"]},
+        "Non vérifié": {"deny": ["view_channel"]},
+        "Membre": {"deny": ["view_channel"]},
+        "Helper": {"allow": ["view_channel", "send_messages", "read_message_history"]},
+        "Modérateur": {"allow": ["view_channel", "send_messages", "read_message_history", "manage_messages"]},
+        "Responsable accueil": {"allow": ["view_channel", "send_messages", "read_message_history"]},
+        "Responsable événements": {"allow": ["view_channel", "send_messages", "read_message_history"]},
+        "Responsable aviation": {"allow": ["view_channel", "send_messages", "read_message_history"]},
+        "Responsable communauté": {"allow": ["view_channel", "send_messages", "read_message_history"]},
+        "Responsable documentation": {"allow": ["view_channel", "send_messages", "read_message_history"]},
+        "Responsable partenariats": {"allow": ["view_channel", "send_messages", "read_message_history"]},
+        "Administrateur": {"allow": ["view_channel", "send_messages", "read_message_history", "manage_channels", "manage_messages"]},
+        "Directeur communauté": {"allow": ["view_channel", "send_messages", "read_message_history"]}
+      },
+      "channels": [
+        {"name": "staff-admin", "type": "text", "_origin": "auto", "overrides": {"Helper": {"deny": ["view_channel"]}, "Modérateur": {"deny": ["view_channel"]}}},
+        {"name": "staff-général", "type": "text", "_origin": "auto"},
+        {"name": "staff-modération", "type": "text", "_origin": "auto"},
+        {"name": "staff-atc", "type": "text", "_origin": "auto"},
+        {"name": "staff-events", "type": "text", "_origin": "auto"},
+        {"name": "staff-technique", "type": "text", "_origin": "auto", "overrides": {"Helper": {"deny": ["view_channel"]}}},
+        {"name": "logs", "type": "text", "_origin": "auto", "overrides": {"Helper": {"deny": ["view_channel"]}}}
+      ]
+    },
+    {
+      "name": "✈️ ▸ FLY TROPIK",
+      "_origin": "new",
+      "position": 7,
+      "overrides": {
+        "@everyone": {"deny": ["view_channel"]},
+        "Non vérifié": {"deny": ["view_channel"]},
+        "Membre": {"deny": ["view_channel"]},
+        "Pilote": {"allow": ["view_channel", "send_messages", "read_message_history"]},
+        "Contrôleur": {"allow": ["view_channel", "send_messages", "read_message_history"]},
+        "AFIS": {"allow": ["view_channel", "send_messages", "read_message_history"]},
+        "Modérateur": {"allow": ["view_channel", "send_messages", "manage_messages"]}
+      },
+      "channels": [
+        {"name": "discussion-va", "type": "text", "_origin": "auto"},
+        {"name": "docs-importants", "type": "text", "_origin": "auto"},
+        {"name": "logs-va", "type": "text", "_origin": "auto"},
+        {"name": "idées-livrées", "type": "text", "_origin": "auto"}
+      ]
+    }
+  ]
+}
