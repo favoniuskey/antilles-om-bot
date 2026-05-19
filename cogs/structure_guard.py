@@ -339,8 +339,24 @@ class StructureGuard(commands.Cog):
                 stats["errors"] += 1
                 continue
 
-            # 2. Pour chaque salon de la catégorie cible : sync sur la cat puis overrides spécifiques
+            # 2. Sync TOUS les salons enfants de la cat (V2 ou non) sur la cat
+            #    → tout salon dans une cat V2 hérite proprement des perms V2
+            for ch in cat.channels:
+                try:
+                    await ch.edit(sync_permissions=True,
+                                  reason="Resync V2 — héritage catégorie")
+                    stats["channels_synced"] += 1
+                except discord.Forbidden:
+                    errors.append(f"Refus sync salon: {ch.name}")
+                    stats["errors"] += 1
+                except discord.HTTPException as e:
+                    errors.append(f"Erreur sync {ch.name}: {e}")
+                    stats["errors"] += 1
+
+            # 3. Pour les salons V2 avec overrides spécifiques → les réappliquer après sync
             for ch_spec in cat_spec.get("channels", []):
+                if not ch_spec.get("overrides"):
+                    continue
                 ch_id = ch_spec.get("existing_id")
                 ch = None
                 if ch_id:
@@ -349,19 +365,7 @@ class StructureGuard(commands.Cog):
                     ch = discord.utils.get(cat.channels, name=ch_spec["name"])
                 if ch is None:
                     continue
-
-                # Sync = écraser les overrides du salon par ceux de la cat
-                try:
-                    await ch.edit(sync_permissions=True,
-                                  reason="Resync V2 — héritage catégorie")
-                    stats["channels_synced"] += 1
-                except discord.Forbidden:
-                    errors.append(f"Refus sync salon: {ch.name}")
-                    stats["errors"] += 1
-                    continue
-
-                # Si overrides spécifiques au salon → les réappliquer
-                for ref, spec in ch_spec.get("overrides", {}).items():
+                for ref, spec in ch_spec["overrides"].items():
                     tgt = resolve(ref)
                     if tgt is None:
                         continue
