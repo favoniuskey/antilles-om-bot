@@ -241,8 +241,8 @@ async def on_ready():
             "cogs.RoleManager",
             "cogs.pilot_stats",
             "cogs.atc_stats",
-            "cogs.music",
-            "cogs.structure_guard"
+            "cogs.structure_guard",
+            "cogs.music"
 
         ]
 
