@@ -427,7 +427,9 @@ class Applier:
             self.report.stat("Salons à renommer", 1)
             if not self.dry_run and action.current_channel:
                 await action.current_channel.edit(
-                    name=name, reason="Migration V2 — renommage salon"
+                    name=name,
+                    sync_permissions=True,
+                    reason="Migration V2 — renommage salon",
                 )
             return
 
