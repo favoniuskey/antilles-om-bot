@@ -145,6 +145,17 @@ def _find_channel_in_guild(guild: discord.Guild, name: str) -> Optional[discord.
     return None
 
 
+def _find_channel_by_id(guild: discord.Guild, channel_id: str) -> Optional[discord.abc.GuildChannel]:
+    """Cherche un salon par ID anywhere dans le serveur (toutes catégories incluses)."""
+    try:
+        ch = guild.get_channel(int(channel_id))
+        if ch and not isinstance(ch, discord.CategoryChannel):
+            return ch
+    except (ValueError, TypeError):
+        pass
+    return None
+
+
 def _diff_role(guild: discord.Guild, target_role: dict, warnings: list[str]) -> RoleAction:
     name = target_role.get("name", "?")
     origin = target_role.get("_origin", "existing")
@@ -223,38 +234,60 @@ def _diff_category(guild: discord.Guild, target_cat: dict, warnings: list[str]) 
     cat_action = CategoryAction(kind=kind, target_name=name, target_data=target_cat,
                                 current_category=existing, reason=reason)
 
-    target_channel_names = {c["name"] for c in target_cat.get("channels", [])}
-
     for ch_target in target_cat.get("channels", []):
         ch_name = ch_target["name"]
-        current_in_target_cat = None
-        if existing:
+        existing_id = ch_target.get("existing_id")
+        current_channel = None
+
+        # 1. Match par ID en priorité (fiable, peu importe le nom actuel)
+        if existing_id:
+            current_channel = _find_channel_by_id(guild, existing_id)
+
+        # 2. Fallback : nom exact dans la catégorie cible
+        if current_channel is None and existing:
             for ch in existing.channels:
                 if ch.name == ch_name:
-                    current_in_target_cat = ch
+                    current_channel = ch
                     break
 
-        if current_in_target_cat:
-            cat_action.channel_actions.append(ChannelAction(
-                kind="skip", target_name=ch_name, parent_category_name=name,
-                target_data=ch_target, current_channel=current_in_target_cat,
-                reason="déjà dans la bonne catégorie"
-            ))
-            continue
+        # 3. Fallback : nom exact anywhere
+        if current_channel is None:
+            current_channel = _find_channel_in_guild(guild, ch_name)
 
-        elsewhere = _find_channel_in_guild(guild, ch_name)
-        if elsewhere:
-            cat_action.channel_actions.append(ChannelAction(
-                kind="move", target_name=ch_name, parent_category_name=name,
-                target_data=ch_target, current_channel=elsewhere,
-                reason=f"déplacer depuis `{elsewhere.category.name if elsewhere.category else 'racine'}`"
-            ))
-        else:
+        if current_channel is None:
             cat_action.channel_actions.append(ChannelAction(
                 kind="create", target_name=ch_name, parent_category_name=name,
                 target_data=ch_target,
                 reason="salon V2 à créer"
             ))
+            continue
+
+        # Déterminer ce qu'il faut faire avec ce salon existant
+        same_cat = (current_channel.category is not None
+                    and existing is not None
+                    and current_channel.category.id == existing.id)
+        same_name = (current_channel.name == ch_name)
+
+        if same_cat and same_name:
+            kind = "skip"
+            reason = "déjà conforme"
+        elif same_cat and not same_name:
+            kind = "rename"
+            reason = f"renommer depuis `{current_channel.name}`"
+        elif not same_cat and same_name:
+            kind = "move"
+            origin_cat = current_channel.category.name if current_channel.category else "racine"
+            reason = f"déplacer depuis `{origin_cat}`"
+        else:
+            kind = "relocate"
+            origin_cat = current_channel.category.name if current_channel.category else "racine"
+            reason = f"déplacer depuis `{origin_cat}` ET renommer `{current_channel.name}` → `{ch_name}`"
+
+        cat_action.channel_actions.append(ChannelAction(
+            kind=kind, target_name=ch_name, parent_category_name=name,
+            target_data=ch_target, current_channel=current_channel,
+            reason=reason
+        ))
 
     # Salons restants dans la catégorie existante qui ne sont pas dans la cible
     # → ils seront archivés au niveau global (collectés ailleurs).
@@ -284,6 +317,7 @@ def compute_diff(guild: discord.Guild, target: Optional[dict] = None) -> Diff:
     target_category_ids: set[str] = set()
     target_category_names: set[str] = set()
     target_channel_names: set[str] = set()
+    target_channel_ids: set[str] = set()
     for tc in target.get("categories", []):
         action = _diff_category(guild, tc, diff.warnings)
         diff.category_actions.append(action)
@@ -294,6 +328,8 @@ def compute_diff(guild: discord.Guild, target: Optional[dict] = None) -> Diff:
             target_category_names.add(tc["old_name"])
         for ch in tc.get("channels", []):
             target_channel_names.add(ch["name"])
+            if ch.get("existing_id"):
+                target_channel_ids.add(str(ch["existing_id"]))
 
     archive_name = target.get("_metadata", {}).get("archive_category_name", "🗄️ ▸ _archive")
     target_category_names.add(archive_name)
@@ -310,9 +346,10 @@ def compute_diff(guild: discord.Guild, target: Optional[dict] = None) -> Diff:
         for ch in guild.channels:
             if isinstance(ch, discord.CategoryChannel):
                 continue
+            if str(ch.id) in target_channel_ids:
+                continue
             if ch.name in target_channel_names:
                 continue
-            # Si déjà dans une catégorie cible, c'est un orphelin dans cette catégorie
             diff.orphan_channels.append(ch)
 
     return diff

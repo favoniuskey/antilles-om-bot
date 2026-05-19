@@ -429,6 +429,24 @@ class Applier:
                 await action.current_channel.edit(
                     name=name, reason="Migration V2 — renommage salon"
                 )
+            return
+
+        if action.kind == "relocate":
+            old = action.current_channel.name if action.current_channel else "?"
+            self.report.bullet(
+                f"🔀 Reloger salon `{old}` → `{name}` (cat `{action.parent_category_name}`)"
+            )
+            self.report.stat("Salons relogés", 1)
+            if not self.dry_run and action.current_channel and parent is not None:
+                try:
+                    await action.current_channel.edit(
+                        name=name,
+                        category=parent,
+                        sync_permissions=True,
+                        reason="Migration V2 — relogement salon",
+                    )
+                except discord.Forbidden:
+                    self.report.alert(f"Permission refusée pour reloger `{old}`")
 
     async def _apply_channel_overrides(
         self,
