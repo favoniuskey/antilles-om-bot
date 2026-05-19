@@ -283,6 +283,80 @@ class StructureGuard(commands.Cog):
         await interaction.followup.send(f"✅ Salon `#{ch.name}` créé dans `{parent.name}`", ephemeral=True)
 
     # ------------------------------------------------------------------
+    # /structure fix-positions
+    # ------------------------------------------------------------------
+
+    @structure.command(
+        name="fix-positions",
+        description="Réorganise les positions des rôles selon la cible V2",
+    )
+    @require_governance()
+    async def fix_positions(self, interaction: discord.Interaction) -> None:
+        await interaction.response.defer(ephemeral=True, thinking=True)
+        guild = interaction.guild
+        try:
+            target = load_target()
+        except Exception as e:
+            await interaction.followup.send(f"❌ Erreur : {e}", ephemeral=True)
+            return
+
+        # Collecter les rôles à réorganiser
+        reorderable: list[tuple[discord.Role, int]] = []
+        for role_spec in target.get("roles", []):
+            if role_spec.get("_protected"):
+                continue
+            pos_rel = role_spec.get("position_rel")
+            if pos_rel is None:
+                continue
+            # Match par ID si dispo, sinon par nom
+            role = None
+            if role_spec.get("existing_id"):
+                role = guild.get_role(int(role_spec["existing_id"]))
+            if role is None:
+                role = discord.utils.get(guild.roles, name=role_spec["name"])
+            if role is None or role.is_default() or role.managed:
+                continue
+            reorderable.append((role, pos_rel))
+
+        if not reorderable:
+            await interaction.followup.send("ℹ️ Aucun rôle à réorganiser.", ephemeral=True)
+            return
+
+        reorderable.sort(key=lambda x: -x[1])
+
+        bot_top = guild.me.top_role.position
+        max_abs = bot_top - 1
+
+        positions: dict[discord.Role, int] = {}
+        abs_pos = max_abs
+        skipped: list[str] = []
+        for role, _ in reorderable:
+            if abs_pos < 1:
+                skipped.append(role.name)
+                continue
+            positions[role] = abs_pos
+            abs_pos -= 1
+
+        try:
+            await guild.edit_role_positions(positions=positions)
+        except discord.Forbidden:
+            await interaction.followup.send("❌ Permission refusée pour réorganiser les rôles.", ephemeral=True)
+            return
+        except discord.HTTPException as e:
+            await interaction.followup.send(f"❌ Erreur HTTP : {e}", ephemeral=True)
+            return
+
+        lines = [f"✅ **{len(positions)} rôles réorganisés** (du plus haut au plus bas) :", ""]
+        for role, p in sorted(positions.items(), key=lambda x: -x[1])[:25]:
+            lines.append(f"`{p:>2}` · {role.mention}")
+        if len(positions) > 25:
+            lines.append(f"… et {len(positions) - 25} de plus")
+        if skipped:
+            lines.append("")
+            lines.append(f"⚠️ Non placés (plus de positions disponibles) : {', '.join(skipped)}")
+        await interaction.followup.send("\n".join(lines), ephemeral=True)
+
+    # ------------------------------------------------------------------
     # /structure migrate-dry-run
     # ------------------------------------------------------------------
 

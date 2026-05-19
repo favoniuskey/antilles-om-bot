@@ -89,7 +89,7 @@ class Applier:
     # ------------------------------------------------------------------
 
     async def step2_roles(self) -> None:
-        self.report.h2("Étape 2 — Rôles")
+        self.report.h2("🎭 Étape 2 — Rôles")
 
         for action in self.diff.role_actions:
             await self._apply_role_action(action)
@@ -97,6 +97,61 @@ class Applier:
         # Désactiver Administrator sur les rôles non protégés qui l'ont encore
         # (en particulier `BOTS` selon V2 §5.3).
         await self._strip_admin_from_unprotected_bots()
+
+        # Réorganiser les positions selon position_rel du target
+        await self._reorder_roles_positions()
+
+    async def _reorder_roles_positions(self) -> None:
+        self.report.h3("📐 Réorganisation des positions")
+
+        # Collecter (role, position_rel) pour tous les rôles non-protected,
+        # non-default, présents sur le serveur.
+        reorderable: list[tuple[discord.Role, int]] = []
+        for action in self.diff.role_actions:
+            data = action.target_data
+            if data.get("_protected"):
+                continue
+            role = self._role_by_name.get(action.target_name)
+            if role is None or role.is_default() or role.managed:
+                continue
+            pos_rel = data.get("position_rel")
+            if pos_rel is None:
+                continue
+            reorderable.append((role, pos_rel))
+
+        if not reorderable:
+            self.report.info("Aucun rôle à réorganiser.")
+            return
+
+        reorderable.sort(key=lambda x: -x[1])
+
+        bot_top = self.guild.me.top_role.position
+        max_abs = bot_top - 1
+
+        positions: dict[discord.Role, int] = {}
+        abs_pos = max_abs
+        for role, _ in reorderable:
+            if abs_pos < 1:
+                self.report.alert(
+                    f"Plus de positions disponibles sous le top role du bot pour `{role.name}`"
+                )
+                break
+            positions[role] = abs_pos
+            abs_pos -= 1
+
+        if not self.dry_run:
+            try:
+                await self.guild.edit_role_positions(positions=positions)
+                for role, p in sorted(positions.items(), key=lambda x: -x[1]):
+                    self.report.bullet(f"🔢 `{role.name}` → position {p}")
+                self.report.stat("Positions réorganisées", len(positions))
+            except discord.Forbidden:
+                self.report.alert("Refus de réorganisation des positions (perm manquante)")
+            except discord.HTTPException as e:
+                self.report.alert(f"Erreur HTTP réorganisation : {e}")
+        else:
+            for role, p in sorted(positions.items(), key=lambda x: -x[1]):
+                self.report.bullet(f"🔢 `{role.name}` → position {p} (dry-run)")
 
     async def _apply_role_action(self, action: RoleAction) -> None:
         name = action.target_name
