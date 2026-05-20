@@ -418,8 +418,8 @@
         {"name": "🌊・bienvenue", "type": "text", "existing_id": "1228477224349339658"},
         {"name": "📜・règlement", "type": "text", "existing_id": "1228454190981054585"},
         {"name": "📚・présentation", "type": "text", "existing_id": "1228669909249294367", "overrides": {
-          "Non vérifié": {"allow": ["send_messages", "read_message_history"], "deny": ["embed_links", "attach_files"]},
-          "Membre": {"allow": ["send_messages", "read_message_history"], "deny": ["embed_links", "attach_files"]}
+          "Non vérifié": {"allow": ["view_channel", "send_messages", "read_message_history", "attach_files", "embed_links", "add_reactions"]},
+          "Membre": {"allow": ["view_channel", "send_messages", "read_message_history", "attach_files", "embed_links", "add_reactions", "use_external_emojis"]}
         }}
       ]
     },
@@ -461,11 +461,14 @@
           "attach_files", "embed_links", "add_reactions",
           "use_external_emojis", "external_stickers",
           "connect", "speak", "use_voice_activation", "stream",
-          "send_messages_in_threads", "create_public_threads"
+          "use_embedded_activities", "use_soundboard", "use_external_sounds",
+          "send_voice_messages", "request_to_speak",
+          "send_messages_in_threads", "create_public_threads", "create_private_threads",
+          "send_polls", "use_application_commands"
         ]},
-        "Modérateur": {"allow": ["manage_messages", "manage_channels", "mention_everyone", "manage_threads", "move_members", "mute_members"]},
+        "Modérateur": {"allow": ["manage_messages", "manage_channels", "mention_everyone", "manage_threads", "move_members", "mute_members", "deafen_members"]},
         "Responsable communauté": {"allow": ["manage_messages", "manage_threads"]},
-        "Muted": {"deny": ["send_messages", "speak", "add_reactions", "send_messages_in_threads"]}
+        "Muted": {"deny": ["send_messages", "speak", "add_reactions", "send_messages_in_threads", "send_voice_messages"]}
       },
       "channels": [
         {"name": "💬・général", "type": "text", "existing_id": "1224706989146378375"},
@@ -614,8 +617,12 @@
         "TPK": {"allow": [
           "view_channel", "send_messages", "read_message_history",
           "attach_files", "embed_links", "add_reactions",
-          "connect", "speak", "use_voice_activation",
-          "create_public_threads", "send_messages_in_threads"
+          "use_external_emojis", "external_stickers",
+          "connect", "speak", "use_voice_activation", "stream",
+          "use_embedded_activities", "use_soundboard", "use_external_sounds",
+          "send_voice_messages",
+          "create_public_threads", "send_messages_in_threads",
+          "send_polls", "use_application_commands"
         ]},
         "Helper": {"allow": ["view_channel", "send_messages", "read_message_history"]},
         "Modérateur": {"allow": ["view_channel", "send_messages", "read_message_history", "manage_messages", "manage_threads"]},

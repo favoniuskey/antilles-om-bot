@@ -924,6 +924,53 @@ class StructureGuard(commands.Cog):
     # ------------------------------------------------------------------
 
     @commands.Cog.listener()
+    async def on_message(self, message: discord.Message) -> None:
+        """Détecte les présentations dans 📚・présentation et accueille avec un embed.
+
+        Le message du membre reste intact. Le bot ajoute une réaction 👋 et
+        poste un embed de bienvenue qui disparaît après 60 secondes pour
+        éviter de polluer le salon.
+        """
+        if message.author.bot:
+            return
+        if message.guild is None:
+            return
+        # Cible par ID ou par nom (présentation V2)
+        ch_name = message.channel.name if hasattr(message.channel, "name") else ""
+        if "présentation" not in ch_name:
+            return
+        # Ignorer les messages trop courts (juste un test / spam)
+        if len(message.content) < 20 and not message.attachments:
+            return
+
+        try:
+            await message.add_reaction("👋")
+        except discord.HTTPException:
+            pass
+
+        embed = discord.Embed(
+            title=f"👋 Bienvenue {message.author.display_name} !",
+            description=(
+                f"Merci pour ta présentation, {message.author.mention} ! "
+                f"La communauté **Antilles - Outre Mer** est ravie de t'accueillir. 🌴\n\n"
+                f"**Prochaines étapes** :\n"
+                f"• Si pas encore fait : accepte le règlement pour devenir `Membre`\n"
+                f"• Choisis ta région et ton profil aviation dans `📜・règlement`\n"
+                f"• Découvre les salons communautaires dans `💬 ▸ COMMUNAUTÉ`\n"
+                f"• Pour les vols et ATC : `🛠️ ▸ OUTILS ATC / BOT`\n\n"
+                f"Si tu as la moindre question, ouvre un ticket dans `🎫 ▸ SUPPORT`. ✈️"
+            ),
+            color=discord.Color.from_rgb(28, 168, 102),
+        )
+        embed.set_footer(text="Ce message disparaîtra dans 60 secondes")
+        try:
+            reply = await message.channel.send(embed=embed)
+            await asyncio.sleep(60)
+            await reply.delete()
+        except (discord.HTTPException, discord.Forbidden):
+            pass
+
+    @commands.Cog.listener()
     async def on_member_join(self, member: discord.Member) -> None:
         """Attribue automatiquement Non vérifié aux nouveaux membres.
 
