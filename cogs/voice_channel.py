@@ -873,20 +873,41 @@ class VoiceChannelsCog(commands.Cog):
 
             # Créer le canal
             channel_name = f"🏝️ {member.display_name}"
+            # V2 : la catégorie COMMUNAUTÉ a @everyone deny view_channel.
+            # On override explicitement pour que Membre + le créateur voient
+            # et puissent rejoindre. @everyone reste deny (héritage cat).
+            membre_role = discord.utils.get(guild.roles, name="Membre")
             overwrites = {
-                guild.default_role: discord.PermissionOverwrite(connect=True),
+                guild.default_role: discord.PermissionOverwrite(
+                    view_channel=False, connect=False
+                ),
                 member: discord.PermissionOverwrite(
+                    view_channel=True,
+                    connect=True,
+                    speak=True,
+                    stream=True,
+                    use_voice_activation=True,
+                    move_members=True,
+                    mute_members=True,
+                    deafen_members=True,
+                    manage_channels=True,
+                ),
+                guild.me: discord.PermissionOverwrite(
+                    view_channel=True,
                     connect=True,
                     move_members=True,
                     mute_members=True,
-                    deafen_members=True
-                ),
-                guild.me: discord.PermissionOverwrite(
-                    connect=True,
-                    move_members=True,
-                    mute_members=True
+                    manage_channels=True,
                 ),
             }
+            if membre_role is not None:
+                overwrites[membre_role] = discord.PermissionOverwrite(
+                    view_channel=True,
+                    connect=True,
+                    speak=True,
+                    stream=True,
+                    use_voice_activation=True,
+                )
 
             channel = await guild.create_voice_channel(
                 name=channel_name,
