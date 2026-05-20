@@ -34,6 +34,26 @@ from migration.reporter import Report
 SNAPSHOTS_DIR = Path(__file__).resolve().parent.parent / "migration" / "snapshots"
 CATEGORIES_CONFIG = Path(__file__).resolve().parent.parent / "config" / "categories.json"
 REGIONS_CONFIG = Path(__file__).resolve().parent.parent / "utils" / "regions_panel.json"
+WELCOMED_FILE = Path(__file__).resolve().parent.parent / "utils" / "presentation_welcomed.json"
+
+
+def _load_welcomed() -> set[int]:
+    """Charge l'ensemble des user_ids déjà accueillis dans présentation."""
+    if not WELCOMED_FILE.exists():
+        return set()
+    try:
+        data = json.loads(WELCOMED_FILE.read_text(encoding="utf-8"))
+        return {int(uid) for uid in data.get("user_ids", [])}
+    except (json.JSONDecodeError, ValueError):
+        return set()
+
+
+def _save_welcomed(welcomed: set[int]) -> None:
+    WELCOMED_FILE.parent.mkdir(parents=True, exist_ok=True)
+    WELCOMED_FILE.write_text(
+        json.dumps({"user_ids": sorted(welcomed)}, indent=2),
+        encoding="utf-8",
+    )
 
 
 # Mapping prédéfini pour le panneau régions/niveau aviation
@@ -940,6 +960,32 @@ class StructureGuard(commands.Cog):
         if "présentation" not in ch_name:
             return
 
+        # Ne pas accueillir si l'utilisateur a déjà été accueilli (1re fois only).
+        # Sécurité supplémentaire : vérifier l'historique du salon pour les
+        # membres existants avant migration (file vide mais ils ont déjà posté).
+        welcomed = _load_welcomed()
+        if message.author.id in welcomed:
+            return
+
+        # Vérif historique : si le membre a déjà posté avant ce message,
+        # c'est qu'il était là avant et on doit pas l'accueillir.
+        already_posted = False
+        try:
+            async for hist in message.channel.history(limit=200, before=message):
+                if hist.author.id == message.author.id:
+                    already_posted = True
+                    break
+        except discord.HTTPException:
+            pass
+
+        # Marquer comme accueilli quoi qu'il arrive (pour le futur)
+        welcomed.add(message.author.id)
+        _save_welcomed(welcomed)
+
+        if already_posted:
+            # Le membre était déjà présent avant — pas de message de bienvenue
+            return
+
         try:
             await message.add_reaction("👋")
         except discord.HTTPException:
@@ -1023,8 +1069,9 @@ class StructureGuard(commands.Cog):
             description=(
                 "Pour accéder à l'ensemble du serveur, **lis le règlement ci-dessus** "
                 "puis clique sur le bouton **« ✅ J'accepte le règlement »** ci-dessous.\n\n"
-                "Tu recevras alors le rôle `Membre` et tu pourras participer pleinement "
-                "à la communauté Antilles - Outre Mer. ✈️🌴"
+                "Tu recevras alors le rôle `Membre`. **Pense aussi à te présenter** "
+                "dans le salon `📚・présentation` et à choisir ta région + ton profil "
+                "aviation dans le panneau juste en dessous. ✈️🌴"
             ),
             color=discord.Color.from_rgb(28, 168, 102),
         )
@@ -1084,8 +1131,9 @@ class StructureGuard(commands.Cog):
             description=(
                 "Pour accéder à l'ensemble du serveur, **lis le règlement ci-dessus** "
                 "puis clique sur le bouton **« J'accepte le règlement »** ci-dessous.\n\n"
-                "Tu recevras alors le rôle `Membre` et tu pourras participer pleinement "
-                "à la communauté Antilles - Outre Mer. ✈️🌴"
+                "Tu recevras alors le rôle `Membre`. **Pense aussi à te présenter** "
+                "dans le salon `📚・présentation` et à choisir ta région + ton profil "
+                "aviation. ✈️🌴"
             ),
             color=discord.Color.from_rgb(28, 168, 102),
         )
@@ -1664,7 +1712,11 @@ class AcceptRulesView(discord.ui.View):
             f"✅ **Bienvenue {member.mention} !**\n"
             f"Tu as accepté le règlement et obtenu le rôle `Membre`. "
             f"Tu as maintenant accès à l'ensemble du serveur.\n\n"
-            f"N'oublie pas de choisir ta région et ton profil aviation sur le panneau juste au-dessus.",
+            f"**Pour bien démarrer :**\n"
+            f"• 🌎 Choisis ta région et ton profil aviation sur le panneau juste en dessous\n"
+            f"• 📚 Présente-toi à la communauté dans `📚・présentation`\n"
+            f"• 💬 Viens dire bonjour dans `💬・général`\n\n"
+            f"Bons vols ! ✈️🌴",
             ephemeral=True,
         )
 
