@@ -907,6 +907,18 @@ class VoiceChannelsCog(commands.Cog):
                     speak=True,
                     stream=True,
                     use_voice_activation=True,
+                    use_soundboard=True,
+                    use_external_sounds=True,
+                    use_embedded_activities=True,
+                    send_voice_messages=True,
+                    add_reactions=True,
+                    use_external_emojis=True,
+                    send_messages=True,
+                    read_message_history=True,
+                    attach_files=True,
+                    embed_links=True,
+                    request_to_speak=True,
+                    use_application_commands=True,
                 )
 
             channel = await guild.create_voice_channel(

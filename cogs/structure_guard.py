@@ -939,9 +939,6 @@ class StructureGuard(commands.Cog):
         ch_name = message.channel.name if hasattr(message.channel, "name") else ""
         if "présentation" not in ch_name:
             return
-        # Ignorer les messages trop courts (juste un test / spam)
-        if len(message.content) < 20 and not message.attachments:
-            return
 
         try:
             await message.add_reaction("👋")
