@@ -369,6 +369,16 @@ class StructureGuard(commands.Cog):
                 errors.append(f"Refus overrides cat: {cat_name}")
                 stats["errors"] += 1
                 continue
+            except discord.HTTPException as e:
+                if getattr(e, "code", None) == 350005:
+                    errors.append(
+                        f"Cat `{cat_name}` : Onboarding Discord bloque (désactive-le dans "
+                        f"Paramètres serveur → Onboarding)"
+                    )
+                else:
+                    errors.append(f"HTTP overrides cat `{cat_name}`: {e}")
+                stats["errors"] += 1
+                continue
 
             # 4. Sync TOUS les salons enfants sur la cat (héritage propre)
             for ch in cat.channels:
