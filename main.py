@@ -249,7 +249,7 @@ async def on_ready():
             "cogs.reaction_roles",
             "cogs.fun",
             "cogs.blacklist_welcome",
-            "cogs.tickets",
+            "cogs.tickets_v2",
             "cogs.voice_channel",
             "cogs.birthday",
             "cogs.server_dump",
