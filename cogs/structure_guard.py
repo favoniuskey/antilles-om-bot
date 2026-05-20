@@ -920,6 +920,114 @@ class StructureGuard(commands.Cog):
         ][:25]
 
     # ------------------------------------------------------------------
+    # Onboarding V2 : auto-attribution du rôle Non vérifié au join
+    # ------------------------------------------------------------------
+
+    @commands.Cog.listener()
+    async def on_member_join(self, member: discord.Member) -> None:
+        """Attribue automatiquement Non vérifié aux nouveaux membres.
+
+        Sans ce listener, les nouveaux n'ont aucun rôle et @everyone est deny
+        partout — donc serveur invisible. Ce listener garantit qu'ils ont au
+        moins accès à 👋 ▸ ACCUEIL pour accepter le règlement.
+        """
+        if member.bot:
+            return
+        non_verifie = discord.utils.get(member.guild.roles, name="Non vérifié")
+        if non_verifie is None:
+            return
+        if non_verifie in member.roles:
+            return
+        try:
+            await member.add_roles(non_verifie, reason="Auto-assign à l'arrivée (V2)")
+        except discord.Forbidden:
+            pass
+
+    @structure.command(
+        name="post-rules-button",
+        description="Poste un bouton 'J'accepte le règlement' (persistant) dans un salon",
+    )
+    @app_commands.describe(
+        channel="Salon où poster (typiquement #📜・règlement)",
+        title="Titre de l'embed (optionnel)",
+    )
+    @require_governance()
+    async def post_rules_button(self, interaction: discord.Interaction,
+                                 channel: discord.TextChannel,
+                                 title: Optional[str] = None) -> None:
+        await interaction.response.defer(ephemeral=True, thinking=True)
+        embed = discord.Embed(
+            title=title or "📜 Validation du règlement",
+            description=(
+                "Pour accéder à l'ensemble du serveur, **lis le règlement ci-dessus** "
+                "puis clique sur le bouton **« J'accepte le règlement »** ci-dessous.\n\n"
+                "Tu recevras alors le rôle `Membre` et tu pourras participer pleinement "
+                "à la communauté Antilles - Outre Mer. ✈️🌴"
+            ),
+            color=discord.Color.from_rgb(28, 168, 102),
+        )
+        embed.set_footer(text="Une seule validation suffit · Bot Antilles - OM")
+        view = AcceptRulesView()
+        try:
+            msg = await channel.send(embed=embed, view=view)
+            await interaction.followup.send(
+                f"✅ Bouton posté dans {channel.mention} (msg `{msg.id}`).\n"
+                f"Le bouton reste persistant même après redémarrage du bot.",
+                ephemeral=True,
+            )
+        except discord.Forbidden:
+            await interaction.followup.send(
+                "❌ Permission refusée pour poster dans ce salon.", ephemeral=True
+            )
+
+    @structure.command(
+        name="onboard-existing",
+        description="Attribue Non vérifié à tous les membres qui n'ont aucun rôle d'accès",
+    )
+    @require_governance()
+    async def onboard_existing(self, interaction: discord.Interaction) -> None:
+        await interaction.response.defer(ephemeral=True, thinking=True)
+        guild = interaction.guild
+        non_verifie = discord.utils.get(guild.roles, name="Non vérifié")
+        membre = discord.utils.get(guild.roles, name="Membre")
+        if non_verifie is None or membre is None:
+            await interaction.followup.send(
+                "❌ Rôles `Non vérifié` ou `Membre` introuvables.", ephemeral=True
+            )
+            return
+
+        # Rôles qui donnent accès au serveur (membre validé OU staff/protégé)
+        access_role_names = {
+            "Membre", "Non vérifié",
+            "Modérateur", "Helper", "Responsable accueil",
+            "Responsable événements", "Responsable aviation",
+            "Responsable communauté", "Responsable documentation",
+            "Responsable partenariats",
+            "Administrateur", "Directeur communauté",
+            "Super-Admin", ".\\",
+        }
+
+        assigned = 0
+        skipped_bots = 0
+        for m in guild.members:
+            if m.bot:
+                skipped_bots += 1
+                continue
+            if any(r.name in access_role_names for r in m.roles):
+                continue
+            try:
+                await m.add_roles(non_verifie, reason="Onboarding rétroactif V2")
+                assigned += 1
+            except discord.Forbidden:
+                pass
+
+        await interaction.followup.send(
+            f"✅ **{assigned} membres** ont reçu `Non vérifié`.\n"
+            f"(Bots ignorés : {skipped_bots})",
+            ephemeral=True,
+        )
+
+    # ------------------------------------------------------------------
     # /structure finalize  +  /structure cleanup-archive
     # ------------------------------------------------------------------
 
@@ -1386,6 +1494,58 @@ class SelfAssignSelect(discord.ui.Select):
             )
 
 
+class AcceptRulesView(discord.ui.View):
+    """View persistante : bouton 'J'accepte le règlement' → Non vérifié → Membre."""
+
+    def __init__(self) -> None:
+        super().__init__(timeout=None)
+
+    @discord.ui.button(
+        label="J'accepte le règlement",
+        style=discord.ButtonStyle.success,
+        emoji="✅",
+        custom_id="structure:accept_rules",
+    )
+    async def accept(self, interaction: discord.Interaction,
+                     button: discord.ui.Button) -> None:
+        member = interaction.user
+        if not isinstance(member, discord.Member):
+            await interaction.response.send_message(
+                "Erreur interne.", ephemeral=True
+            )
+            return
+        guild = interaction.guild
+        non_verifie = discord.utils.get(guild.roles, name="Non vérifié")
+        membre = discord.utils.get(guild.roles, name="Membre")
+        if membre is None:
+            await interaction.response.send_message(
+                "❌ Rôle `Membre` introuvable. Contacte le staff.", ephemeral=True
+            )
+            return
+        if membre in member.roles:
+            await interaction.response.send_message(
+                "ℹ️ Tu es déjà validé en tant que `Membre`. Bienvenue !",
+                ephemeral=True,
+            )
+            return
+        try:
+            await member.add_roles(membre, reason="Acceptation du règlement V2")
+            if non_verifie and non_verifie in member.roles:
+                await member.remove_roles(non_verifie, reason="Acceptation du règlement V2")
+        except discord.Forbidden:
+            await interaction.response.send_message(
+                "❌ Permission refusée. Contacte un admin.", ephemeral=True
+            )
+            return
+        await interaction.response.send_message(
+            f"✅ **Bienvenue {member.mention} !**\n"
+            f"Tu as accepté le règlement et obtenu le rôle `Membre`. "
+            f"Tu as maintenant accès à l'ensemble du serveur.\n\n"
+            f"N'oublie pas de choisir ta région et ton profil aviation sur le panneau juste au-dessus.",
+            ephemeral=True,
+        )
+
+
 class RegionsPanelView(discord.ui.View):
     """View persistante pour le panneau régions + niveau aviation."""
 
@@ -1412,5 +1572,7 @@ class RegionsPanelView(discord.ui.View):
 async def setup(bot: commands.Bot) -> None:
     cog = StructureGuard(bot)
     await bot.add_cog(cog)
-    # Enregistrer la view persistante (custom_id matchera au prochain interaction)
+    # Enregistrer les views persistantes (les custom_id matcheront aux interactions
+    # même après un restart du bot).
     bot.add_view(RegionsPanelView())
+    bot.add_view(AcceptRulesView())
