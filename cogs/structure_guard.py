@@ -12,8 +12,10 @@ from __future__ import annotations
 import asyncio
 import io
 import json
+import re
 from datetime import datetime
 from pathlib import Path
+from typing import Optional
 
 import discord
 from discord import app_commands
@@ -30,6 +32,31 @@ from migration.reporter import Report
 
 
 SNAPSHOTS_DIR = Path(__file__).resolve().parent.parent / "migration" / "snapshots"
+CATEGORIES_CONFIG = Path(__file__).resolve().parent.parent / "config" / "categories.json"
+REGIONS_CONFIG = Path(__file__).resolve().parent.parent / "utils" / "regions_panel.json"
+
+
+# Mapping prédéfini pour le panneau régions/niveau aviation
+# (basé sur les rôles existants du serveur)
+REGIONS_PANEL_OPTIONS: list[dict] = [
+    {"label": "Martinique", "emoji": "🇲🇶", "role_name": "Martinique",
+     "description": "Antilles - Martinique"},
+    {"label": "Guadeloupe", "emoji": "🇬🇵", "role_name": "Le Raizet",
+     "description": "Antilles - Guadeloupe (Le Raizet)"},
+    {"label": "Guyane", "emoji": "🇬🇫", "role_name": "Cayenne",
+     "description": "Guyane - Cayenne"},
+]
+
+AVIATION_PANEL_OPTIONS: list[dict] = [
+    {"label": "Débutant", "emoji": "🐣", "role_name": "Débutant",
+     "description": "Je découvre l'aviation virtuelle"},
+    {"label": "Pilote", "emoji": "✈️", "role_name": "Pilote",
+     "description": "Je suis pilote"},
+    {"label": "Contrôleur", "emoji": "🛂", "role_name": "Contrôleur",
+     "description": "Je suis contrôleur ATC"},
+    {"label": "AFIS", "emoji": "🎙", "role_name": "AFIS",
+     "description": "Je suis agent AFIS"},
+]
 
 
 GOVERNANCE_ROLES = {"Directeur communauté", "Administrateur"}
@@ -892,6 +919,28 @@ class StructureGuard(commands.Cog):
             if current.lower() in s.stem.lower()
         ][:25]
 
+    # ------------------------------------------------------------------
+    # /structure finalize  +  /structure cleanup-archive
+    # ------------------------------------------------------------------
+
+    @structure.command(
+        name="finalize",
+        description="Patch main.py + Directeur communauté + panneau régions",
+    )
+    @app_commands.describe(regions_channel="Salon où poster le panneau de sélection")
+    @require_governance()
+    async def finalize_cmd(self, interaction: discord.Interaction,
+                            regions_channel: discord.TextChannel) -> None:
+        await _do_finalize(interaction, regions_channel)
+
+    @structure.command(
+        name="cleanup-archive",
+        description="Supprime les salons résiduels de _archive (avec confirmation)",
+    )
+    @require_governance()
+    async def cleanup_archive_cmd(self, interaction: discord.Interaction) -> None:
+        await _do_cleanup_archive(interaction)
+
 
 # ----------------------------------------------------------------------
 # Vues (boutons) de confirmation
@@ -1085,5 +1134,283 @@ class ConfirmRollbackView(discord.ui.View):
         await interaction.response.edit_message(content="❌ Rollback annulé.", view=self)
 
 
+def _save_categories_config(replacements: dict[str, int]) -> dict:
+    """Sauvegarde les IDs de catégorie dans config/categories.json.
+
+    main.py lit ce fichier au démarrage pour override ATC_CATEGORY_ID +
+    SUPPORT_CATEGORY_ID. Ce mécanisme survit aux `git reset --hard` du
+    container Pterodactyl (le fichier est en gitignore).
+
+    Retourne {var_name: (old_value, new_value)}.
+    """
+    existing: dict = {}
+    if CATEGORIES_CONFIG.exists():
+        try:
+            existing = json.loads(CATEGORIES_CONFIG.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            existing = {}
+
+    changes: dict[str, tuple[int, int]] = {}
+    for var, new_val in replacements.items():
+        old_val = int(existing.get(var, 0)) if existing.get(var) else None
+        if old_val == new_val:
+            continue
+        existing[var] = str(new_val)
+        changes[var] = (old_val or 0, new_val)
+
+    if changes:
+        CATEGORIES_CONFIG.parent.mkdir(parents=True, exist_ok=True)
+        existing["_updated_at"] = datetime.now().isoformat()
+        CATEGORIES_CONFIG.write_text(
+            json.dumps(existing, indent=2, ensure_ascii=False), encoding="utf-8"
+        )
+    return changes
+
+
+async def _do_finalize(interaction: discord.Interaction,
+                       regions_channel: discord.TextChannel) -> None:
+        await interaction.response.defer(ephemeral=True, thinking=True)
+        guild = interaction.guild
+        report: list[str] = ["## 🏁 Finalisation V2", ""]
+
+        # 1. Récupérer les IDs des cats cibles
+        outils_atc = discord.utils.get(guild.categories, name="🛠️ ▸ OUTILS ATC / BOT")
+        support = discord.utils.get(guild.categories, name="🎫 ▸ SUPPORT")
+        documentation = discord.utils.get(guild.categories, name="📚 ▸ DOCUMENTATION")
+        staff = discord.utils.get(guild.categories, name="🛡️ ▸ STAFF")
+
+        report.append("### 1️⃣ Catégories détectées")
+        for label, cat in [("OUTILS ATC", outils_atc), ("SUPPORT", support),
+                           ("DOCUMENTATION", documentation), ("STAFF", staff)]:
+            if cat:
+                report.append(f"• {label} : `{cat.id}`")
+            else:
+                report.append(f"• {label} : ❌ introuvable")
+        report.append("")
+
+        # 2. Patch main.py
+        replacements = {}
+        if outils_atc:
+            replacements["ATC_CATEGORY_ID"] = outils_atc.id
+        if support:
+            replacements["SUPPORT_CATEGORY_ID"] = support.id
+
+        report.append("### 2️⃣ Sauvegarde IDs dans config/categories.json")
+        if replacements:
+            try:
+                changes = _save_categories_config(replacements)
+                if changes:
+                    for var, (old, new) in changes.items():
+                        report.append(f"• `{var}` : `{old}` → `{new}` ✓")
+                    report.append("> ⚠️ Restart Pterodactyl requis pour que main.py lise le nouveau fichier")
+                else:
+                    report.append("• IDs déjà à jour, aucun changement")
+            except Exception as e:
+                report.append(f"❌ Erreur sauvegarde : {e}")
+        else:
+            report.append("• Aucune catégorie cible détectée, skip")
+        report.append("")
+
+        # 3. Auto-attribuer Directeur communauté
+        report.append("### 3️⃣ Rôle Directeur communauté")
+        director = discord.utils.get(guild.roles, name="Directeur communauté")
+        if director is None:
+            report.append("• ❌ Rôle introuvable")
+        elif director in interaction.user.roles:
+            report.append(f"• {interaction.user.mention} a déjà le rôle ✓")
+        else:
+            try:
+                await interaction.user.add_roles(director, reason="Finalize V2")
+                report.append(f"• {interaction.user.mention} → {director.mention} attribué ✓")
+            except discord.Forbidden:
+                report.append("• ❌ Permission refusée (hiérarchie du bot ?)")
+        report.append("")
+
+        # 4. Poster le panneau régions
+        report.append(f"### 4️⃣ Panneau régions/aviation dans {regions_channel.mention}")
+        embed = discord.Embed(
+            title="🌎 Choisis ton profil",
+            description=(
+                "Sélectionne dans les menus ci-dessous **ta région d'origine** "
+                "et **ton profil aviation**.\n\n"
+                "*Les rôles sont attribués/retirés en cliquant sur l'option.*"
+            ),
+            color=discord.Color.from_rgb(28, 168, 102),
+        )
+        embed.set_footer(text="🌴 Les Antilles - OM 🌴 • V2")
+        view = RegionsPanelView(guild=guild)
+        try:
+            msg = await regions_channel.send(embed=embed, view=view)
+            report.append(f"• Panneau posté (msg `{msg.id}`) ✓")
+            # Sauvegarder pour référence
+            try:
+                REGIONS_CONFIG.parent.mkdir(parents=True, exist_ok=True)
+                REGIONS_CONFIG.write_text(
+                    json.dumps({"channel_id": str(regions_channel.id),
+                                "message_id": str(msg.id),
+                                "created_at": datetime.now().isoformat()},
+                               indent=2), encoding="utf-8")
+            except Exception:
+                pass
+        except discord.Forbidden:
+            report.append("• ❌ Permission refusée pour poster dans ce salon")
+
+        text = "\n".join(report)
+        if len(text) <= 1900:
+            await interaction.followup.send(text, ephemeral=True)
+        else:
+            buf = io.BytesIO(text.encode("utf-8"))
+            await interaction.followup.send(
+                "Rapport long, fichier joint.",
+                file=discord.File(buf, filename="finalize.md"),
+                ephemeral=True,
+            )
+
+async def _do_cleanup_archive(interaction: discord.Interaction) -> None:
+        await interaction.response.defer(ephemeral=True, thinking=True)
+        guild = interaction.guild
+        archive = discord.utils.get(guild.categories, name="🗄️ ▸ _archive")
+        if archive is None:
+            await interaction.followup.send("❌ Catégorie `_archive` introuvable.", ephemeral=True)
+            return
+        if not archive.channels:
+            await interaction.followup.send("ℹ️ `_archive` est vide.", ephemeral=True)
+            return
+
+        listing = "\n".join(f"• `{ch.name}` ({ch.type})" for ch in archive.channels)
+        embed = discord.Embed(
+            title="⚠️ Confirmation suppression _archive",
+            description=(
+                f"Tu es sur le point de **SUPPRIMER DÉFINITIVEMENT** "
+                f"{len(archive.channels)} salons :\n\n{listing}\n\n"
+                f"Cette action est **irréversible**."
+            ),
+            color=discord.Color.red(),
+        )
+        view = ConfirmArchiveCleanupView(interaction.user.id, archive)
+        await interaction.followup.send(embed=embed, view=view, ephemeral=True)
+
+class ConfirmArchiveCleanupView(discord.ui.View):
+    def __init__(self, requester_id: int, archive: discord.CategoryChannel) -> None:
+        super().__init__(timeout=120)
+        self.requester_id = requester_id
+        self.archive = archive
+        self.handled = False
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        if interaction.user.id != self.requester_id:
+            await interaction.response.send_message("Pas pour toi.", ephemeral=True)
+            return False
+        return True
+
+    @discord.ui.button(label="Supprimer tout", style=discord.ButtonStyle.danger, emoji="🗑️")
+    async def confirm(self, interaction, button):
+        if self.handled:
+            return
+        self.handled = True
+        for c in self.children:
+            c.disabled = True
+        await interaction.response.edit_message(content="🗑️ Suppression en cours…", view=self)
+        deleted = 0
+        failed: list[str] = []
+        for ch in list(self.archive.channels):
+            try:
+                await ch.delete(reason="Cleanup archive V2")
+                deleted += 1
+            except discord.Forbidden:
+                failed.append(ch.name)
+        try:
+            if not self.archive.channels:
+                await self.archive.delete(reason="Cleanup archive V2 — cat vide")
+                cat_msg = " + catégorie `_archive` supprimée"
+            else:
+                cat_msg = ""
+        except discord.Forbidden:
+            cat_msg = ""
+        msg = f"✅ {deleted} salons supprimés{cat_msg}."
+        if failed:
+            msg += f"\n⚠️ Refus : {', '.join(failed)}"
+        await interaction.followup.send(msg, ephemeral=True)
+
+    @discord.ui.button(label="Annuler", style=discord.ButtonStyle.secondary, emoji="✖️")
+    async def cancel(self, interaction, button):
+        self.handled = True
+        for c in self.children:
+            c.disabled = True
+        await interaction.response.edit_message(content="❌ Annulé.", view=self)
+
+
+class SelfAssignSelect(discord.ui.Select):
+    """Menu déroulant persistant : attribue/retire un rôle à l'utilisateur."""
+
+    def __init__(self, custom_id: str, placeholder: str, options_spec: list[dict],
+                 role_ids: dict[str, int]) -> None:
+        opts = []
+        for spec in options_spec:
+            rid = role_ids.get(spec["role_name"])
+            if rid is None:
+                continue
+            opts.append(discord.SelectOption(
+                label=spec["label"],
+                value=str(rid),
+                emoji=spec["emoji"],
+                description=spec.get("description", "")[:100],
+            ))
+        super().__init__(
+            placeholder=placeholder,
+            options=opts or [discord.SelectOption(label="Aucun rôle disponible", value="0")],
+            custom_id=custom_id,
+            min_values=0,
+            max_values=1,
+        )
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        if not self.values or self.values[0] == "0":
+            await interaction.response.send_message("Aucune sélection.", ephemeral=True)
+            return
+        role_id = int(self.values[0])
+        role = interaction.guild.get_role(role_id)
+        if role is None:
+            await interaction.response.send_message("Rôle introuvable.", ephemeral=True)
+            return
+        member = interaction.user
+        if role in member.roles:
+            await member.remove_roles(role, reason="Self-assign via panel")
+            await interaction.response.send_message(
+                f"➖ Rôle {role.mention} retiré.", ephemeral=True
+            )
+        else:
+            await member.add_roles(role, reason="Self-assign via panel")
+            await interaction.response.send_message(
+                f"✅ Rôle {role.mention} attribué.", ephemeral=True
+            )
+
+
+class RegionsPanelView(discord.ui.View):
+    """View persistante pour le panneau régions + niveau aviation."""
+
+    def __init__(self, guild: Optional[discord.Guild] = None) -> None:
+        super().__init__(timeout=None)
+        role_ids: dict[str, int] = {}
+        if guild is not None:
+            for r in guild.roles:
+                role_ids[r.name] = r.id
+        self.add_item(SelfAssignSelect(
+            custom_id="structure:regions_select",
+            placeholder="🌎 Choisis ta région d'origine",
+            options_spec=REGIONS_PANEL_OPTIONS,
+            role_ids=role_ids,
+        ))
+        self.add_item(SelfAssignSelect(
+            custom_id="structure:aviation_select",
+            placeholder="✈️ Quel est ton profil aviation ?",
+            options_spec=AVIATION_PANEL_OPTIONS,
+            role_ids=role_ids,
+        ))
+
+
 async def setup(bot: commands.Bot) -> None:
-    await bot.add_cog(StructureGuard(bot))
+    cog = StructureGuard(bot)
+    await bot.add_cog(cog)
+    # Enregistrer la view persistante (custom_id matchera au prochain interaction)
+    bot.add_view(RegionsPanelView())

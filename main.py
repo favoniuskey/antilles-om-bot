@@ -26,6 +26,21 @@ ADMIN_ROLES = [1297138129920196639, 1297148016725332068, 1309969291822760038]
 ATC_CATEGORY_ID = 1313797047844995093
 SUPPORT_CATEGORY_ID = 1313796797562490902
 
+# Override dynamique depuis config/categories.json (écrit par /structure finalize)
+# Ce mécanisme permet au bot de mettre à jour les IDs sans patcher main.py.
+try:
+    _cat_cfg_path = os.path.join(os.path.dirname(__file__), "config", "categories.json")
+    if os.path.exists(_cat_cfg_path):
+        with open(_cat_cfg_path, "r", encoding="utf-8") as _f:
+            _cat_cfg = json.load(_f)
+        if _cat_cfg.get("ATC_CATEGORY_ID"):
+            ATC_CATEGORY_ID = int(_cat_cfg["ATC_CATEGORY_ID"])
+        if _cat_cfg.get("SUPPORT_CATEGORY_ID"):
+            SUPPORT_CATEGORY_ID = int(_cat_cfg["SUPPORT_CATEGORY_ID"])
+        logger.info(f"📂 Catégories override : ATC={ATC_CATEGORY_ID} SUPPORT={SUPPORT_CATEGORY_ID}")
+except Exception as _e:
+    logger.warning(f"⚠️ Lecture config/categories.json échouée : {_e}")
+
 # Configuration du bot
 intents = discord.Intents.default()
 intents.members = True

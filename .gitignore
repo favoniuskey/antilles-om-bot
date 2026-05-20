@@ -8,6 +8,9 @@
 server_config.json
 voice_config.json
 
+# Config dynamique écrite par le bot (survit aux git reset --hard)
+config/
+
 # Generated data files
 voice_channels.json
 voice_channels.backup
