@@ -103,8 +103,8 @@ def _user_has_open_ticket(state: dict, user_id: int, ticket_type: str) -> Option
 # Views persistantes
 # ----------------------------------------------------------------------
 
-class OpenTicketView(discord.ui.View):
-    """View persistante sur les panneaux ticket-support / ticket-atc."""
+class OpenSupportView(discord.ui.View):
+    """View persistante du panneau ticket-support (1 seul bouton)."""
 
     def __init__(self) -> None:
         super().__init__(timeout=None)
@@ -118,6 +118,13 @@ class OpenTicketView(discord.ui.View):
     async def open_support(self, interaction: discord.Interaction,
                             button: discord.ui.Button) -> None:
         await interaction.response.send_modal(TicketModal("support"))
+
+
+class OpenAtcView(discord.ui.View):
+    """View persistante du panneau ticket-atc (1 seul bouton)."""
+
+    def __init__(self) -> None:
+        super().__init__(timeout=None)
 
     @discord.ui.button(
         label="Ouvrir un ticket ATC",
@@ -608,12 +615,10 @@ class TicketsV2(commands.Cog):
         )
         embed_atc.set_footer(text="Un seul ticket actif à la fois")
 
-        view = OpenTicketView()
-        # On poste les 2 vues sur chaque panneau pour qu'on puisse ouvrir
-        # n'importe quel type de ticket depuis n'importe quel salon.
+        # Un seul bouton par panneau, dédié au type du salon
         try:
-            await support_ch.send(embed=embed_support, view=OpenTicketView())
-            await atc_ch.send(embed=embed_atc, view=OpenTicketView())
+            await support_ch.send(embed=embed_support, view=OpenSupportView())
+            await atc_ch.send(embed=embed_atc, view=OpenAtcView())
         except discord.Forbidden:
             await interaction.followup.send(
                 "❌ Permission refusée pour poster.", ephemeral=True
@@ -629,6 +634,7 @@ class TicketsV2(commands.Cog):
 async def setup(bot: commands.Bot) -> None:
     cog = TicketsV2(bot)
     await bot.add_cog(cog)
-    # Views persistantes
-    bot.add_view(OpenTicketView())
+    # Views persistantes (les custom_id matcheront les anciens messages aussi)
+    bot.add_view(OpenSupportView())
+    bot.add_view(OpenAtcView())
     bot.add_view(TicketControlView())
