@@ -944,6 +944,85 @@ class StructureGuard(commands.Cog):
             pass
 
     @structure.command(
+        name="setup-onboarding-flow",
+        description="Setup complet: supprime l'ancien panneau, poste règlement + panneau régions",
+    )
+    @app_commands.describe(channel="Salon où poster le flow (typiquement #📜・règlement)")
+    @require_governance()
+    async def setup_onboarding_flow(self, interaction: discord.Interaction,
+                                     channel: discord.TextChannel) -> None:
+        await interaction.response.defer(ephemeral=True, thinking=True)
+        guild = interaction.guild
+        report: list[str] = ["## 🎯 Setup onboarding flow", ""]
+
+        # 1. Supprimer l'ancien panneau régions si présent
+        if REGIONS_CONFIG.exists():
+            try:
+                old_cfg = json.loads(REGIONS_CONFIG.read_text(encoding="utf-8"))
+                old_ch_id = int(old_cfg.get("channel_id", 0))
+                old_msg_id = int(old_cfg.get("message_id", 0))
+                if old_ch_id and old_msg_id:
+                    old_ch = guild.get_channel(old_ch_id)
+                    if isinstance(old_ch, discord.TextChannel):
+                        try:
+                            old_msg = await old_ch.fetch_message(old_msg_id)
+                            await old_msg.delete()
+                            report.append(f"• 🗑️ Ancien panneau régions supprimé (msg `{old_msg_id}`)")
+                        except (discord.NotFound, discord.Forbidden):
+                            report.append(f"• ℹ️ Ancien panneau introuvable ou déjà supprimé")
+            except Exception:
+                pass
+
+        # 2. Poster le bouton règlement (sera EN HAUT du flow)
+        rules_embed = discord.Embed(
+            title="📜 Validation du règlement",
+            description=(
+                "Pour accéder à l'ensemble du serveur, **lis le règlement ci-dessus** "
+                "puis clique sur le bouton **« ✅ J'accepte le règlement »** ci-dessous.\n\n"
+                "Tu recevras alors le rôle `Membre` et tu pourras participer pleinement "
+                "à la communauté Antilles - Outre Mer. ✈️🌴"
+            ),
+            color=discord.Color.from_rgb(28, 168, 102),
+        )
+        rules_embed.set_footer(text="Une seule validation suffit · 🌴 Antilles - OM")
+        try:
+            rules_msg = await channel.send(embed=rules_embed, view=AcceptRulesView())
+            report.append(f"• ✅ Bouton règlement posté (msg `{rules_msg.id}`)")
+        except discord.Forbidden:
+            report.append("• ❌ Permission refusée pour poster")
+            await interaction.followup.send("\n".join(report), ephemeral=True)
+            return
+
+        # 3. Poster le panneau régions/aviation (EN DESSOUS)
+        regions_embed = discord.Embed(
+            title="🌎 Choisis ton profil",
+            description=(
+                "**Une fois ton règlement validé** ci-dessus, sélectionne ici "
+                "**ta région d'origine** et **ton profil aviation**.\n\n"
+                "*Les rôles sont attribués/retirés en cliquant sur l'option.*"
+            ),
+            color=discord.Color.from_rgb(28, 168, 102),
+        )
+        regions_embed.set_footer(text="🌴 Les Antilles - OM 🌴 • V2")
+        try:
+            regions_msg = await channel.send(embed=regions_embed, view=RegionsPanelView(guild=guild))
+            report.append(f"• ✅ Panneau régions/aviation posté (msg `{regions_msg.id}`)")
+            # Sauvegarde pour pouvoir le supprimer/recréer plus tard
+            REGIONS_CONFIG.parent.mkdir(parents=True, exist_ok=True)
+            REGIONS_CONFIG.write_text(json.dumps({
+                "channel_id": str(channel.id),
+                "rules_message_id": str(rules_msg.id),
+                "message_id": str(regions_msg.id),
+                "updated_at": datetime.now().isoformat(),
+            }, indent=2), encoding="utf-8")
+        except discord.Forbidden:
+            report.append("• ❌ Permission refusée pour le panneau régions")
+
+        report.append("")
+        report.append(f"✅ Flow setup dans {channel.mention} : règlement → régions/aviation")
+        await interaction.followup.send("\n".join(report), ephemeral=True)
+
+    @structure.command(
         name="post-rules-button",
         description="Poste un bouton 'J'accepte le règlement' (persistant) dans un salon",
     )
