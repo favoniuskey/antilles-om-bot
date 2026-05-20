@@ -411,12 +411,16 @@
       "overrides": {
         "@everyone": {"deny": ["view_channel"]},
         "Non vérifié": {"allow": ["view_channel", "read_message_history"], "deny": ["send_messages"]},
-        "Membre": {"allow": ["view_channel", "read_message_history"], "deny": ["send_messages"]}
+        "Membre": {"allow": ["view_channel", "read_message_history"], "deny": ["send_messages"]},
+        "Muted": {"deny": ["send_messages", "speak", "add_reactions", "send_messages_in_threads"]}
       },
       "channels": [
-        {"name": "bienvenue", "type": "text", "existing_id": "1228477224349339658"},
-        {"name": "règlement", "type": "text", "existing_id": "1228454190981054585"},
-        {"name": "présentation", "type": "text", "existing_id": "1228669909249294367", "overrides": {"Non vérifié": {"allow": ["send_messages"]}, "Membre": {"allow": ["send_messages"]}}}
+        {"name": "🌊・bienvenue", "type": "text", "existing_id": "1228477224349339658"},
+        {"name": "📜・règlement", "type": "text", "existing_id": "1228454190981054585"},
+        {"name": "📚・présentation", "type": "text", "existing_id": "1228669909249294367", "overrides": {
+          "Non vérifié": {"allow": ["send_messages", "read_message_history"], "deny": ["embed_links", "attach_files"]},
+          "Membre": {"allow": ["send_messages", "read_message_history"], "deny": ["embed_links", "attach_files"]}
+        }}
       ]
     },
     {
@@ -427,14 +431,20 @@
       "overrides": {
         "@everyone": {"deny": ["view_channel"]},
         "Non vérifié": {"deny": ["view_channel"]},
-        "Membre": {"allow": ["view_channel", "read_message_history"], "deny": ["send_messages"]},
-        "Modérateur": {"allow": ["send_messages"]},
-        "Responsable événements": {"allow": ["send_messages"]}
+        "Membre": {"allow": ["view_channel", "read_message_history", "add_reactions"], "deny": ["send_messages"]},
+        "Helper": {"allow": ["send_messages"]},
+        "Modérateur": {"allow": ["send_messages", "mention_everyone", "manage_messages"]},
+        "Responsable événements": {"allow": ["send_messages", "mention_everyone"]},
+        "Administrateur": {"allow": ["send_messages", "manage_messages", "mention_everyone"]},
+        "Directeur communauté": {"allow": ["send_messages", "manage_messages", "mention_everyone"]},
+        "Antilles - Outre Mer": {"allow": ["view_channel", "send_messages", "manage_messages", "embed_links", "attach_files", "mention_everyone"]},
+        "Muted": {"deny": ["send_messages", "speak", "add_reactions"]}
       },
       "channels": [
-        {"name": "annonces", "type": "text", "existing_id": "1228454285478461611"},
-        {"name": "changelog", "type": "text", "existing_id": "1228670094729809960"},
-        {"name": "partenaires", "type": "text", "existing_id": "1264141671319470080"}
+        {"name": "📣・annonces", "type": "text", "existing_id": "1228454285478461611"},
+        {"name": "📣・annonces-lives", "type": "text", "existing_id": "1228528569379196999"},
+        {"name": "🔧・changelog", "type": "text", "existing_id": "1228670094729809960"},
+        {"name": "🤝・partenaires", "type": "text", "existing_id": "1264141671319470080"}
       ]
     },
     {
@@ -446,17 +456,23 @@
       "overrides": {
         "@everyone": {"deny": ["view_channel"]},
         "Non vérifié": {"deny": ["view_channel"]},
-        "Membre": {"allow": ["view_channel", "send_messages", "read_message_history", "attach_files", "embed_links", "add_reactions"]},
-        "Modérateur": {"allow": ["manage_messages", "manage_channels", "mention_everyone"]},
-        "Responsable communauté": {"allow": ["manage_messages"]},
+        "Membre": {"allow": [
+          "view_channel", "send_messages", "read_message_history",
+          "attach_files", "embed_links", "add_reactions",
+          "use_external_emojis", "external_stickers",
+          "connect", "speak", "use_voice_activation", "stream",
+          "send_messages_in_threads", "create_public_threads"
+        ]},
+        "Modérateur": {"allow": ["manage_messages", "manage_channels", "mention_everyone", "manage_threads", "move_members", "mute_members"]},
+        "Responsable communauté": {"allow": ["manage_messages", "manage_threads"]},
         "Muted": {"deny": ["send_messages", "speak", "add_reactions", "send_messages_in_threads"]}
       },
       "channels": [
-        {"name": "général", "type": "text", "existing_id": "1224706989146378375"},
-        {"name": "coin-créole", "type": "text", "existing_id": "1297857147979436044"},
-        {"name": "screenshots-médias", "type": "text", "existing_id": "1228669046078312529"},
-        {"name": "concours-screenshots", "type": "text", "existing_id": "1388681507002126336"},
-        {"name": "vols-de-groupe", "type": "text", "existing_id": "1228669993349021718"}
+        {"name": "💬・général", "type": "text", "existing_id": "1224706989146378375"},
+        {"name": "🗣・coin-créole", "type": "text", "existing_id": "1297857147979436044"},
+        {"name": "📸・screenshots-médias", "type": "text", "existing_id": "1228669046078312529"},
+        {"name": "🏆・concours-screenshots", "type": "text", "existing_id": "1388681507002126336"},
+        {"name": "✈・vols-de-groupe", "type": "text", "existing_id": "1228669993349021718"}
       ]
     },
     {
@@ -466,15 +482,21 @@
       "overrides": {
         "@everyone": {"deny": ["view_channel"]},
         "Non vérifié": {"deny": ["view_channel"]},
-        "Membre": {"allow": ["view_channel", "read_message_history"], "deny": ["send_messages"]},
-        "Antilles - Outre Mer": {"allow": ["view_channel", "send_messages", "manage_messages", "embed_links", "attach_files"]},
-        "Modérateur": {"allow": ["send_messages", "manage_messages"]}
+        "Membre": {"allow": ["view_channel", "read_message_history", "add_reactions"], "deny": ["send_messages"]},
+        "Antilles - Outre Mer": {"allow": ["view_channel", "send_messages", "manage_messages", "embed_links", "attach_files", "mention_everyone"]},
+        "Helper": {"allow": ["send_messages"]},
+        "Modérateur": {"allow": ["send_messages", "manage_messages"]},
+        "Muted": {"deny": ["send_messages", "add_reactions"]}
       },
       "channels": [
-        {"name": "positions-atc", "type": "text", "existing_id": "1310926262566387753"},
-        {"name": "booking-atc", "type": "text", "existing_id": "1317134328559440024"},
-        {"name": "request-metar", "type": "text", "existing_id": "1228753722125848617", "overrides": {"Membre": {"allow": ["send_messages"]}}},
-        {"name": "cmd-bot", "type": "text", "existing_id": "1310691578314100798", "overrides": {"Membre": {"allow": ["send_messages"]}}}
+        {"name": "📡・positions-atc", "type": "text", "existing_id": "1310926262566387753"},
+        {"name": "📅・booking-atc", "type": "text", "existing_id": "1317134328559440024"},
+        {"name": "🌦・request-metar", "type": "text", "existing_id": "1228753722125848617", "overrides": {
+          "Membre": {"allow": ["send_messages", "use_application_commands"]}
+        }},
+        {"name": "🤖・cmd-bot", "type": "text", "existing_id": "1310691578314100798", "overrides": {
+          "Membre": {"allow": ["send_messages", "use_application_commands", "embed_links", "attach_files"]}
+        }}
       ]
     },
     {
@@ -485,15 +507,17 @@
       "position": 4,
       "overrides": {
         "@everyone": {"deny": ["view_channel"]},
-        "Non vérifié": {"allow": ["view_channel", "read_message_history", "send_messages"]},
-        "Membre": {"allow": ["view_channel", "send_messages", "read_message_history"]},
+        "Non vérifié": {"allow": ["view_channel", "read_message_history", "send_messages", "attach_files", "embed_links"]},
+        "Membre": {"allow": ["view_channel", "send_messages", "read_message_history", "attach_files", "embed_links", "add_reactions", "create_public_threads", "send_messages_in_threads"]},
         "Helper": {"allow": ["manage_messages", "manage_threads"]},
-        "Modérateur": {"allow": ["manage_messages", "manage_channels", "manage_threads"]}
+        "Modérateur": {"allow": ["manage_messages", "manage_channels", "manage_threads"]},
+        "Antilles - Outre Mer": {"allow": ["view_channel", "send_messages", "manage_messages", "manage_channels", "manage_threads", "embed_links", "attach_files"]},
+        "Muted": {"deny": ["send_messages", "speak", "add_reactions", "send_messages_in_threads"]}
       },
       "channels": [
-        {"name": "ticket-support", "type": "text", "existing_id": "1314609406029070447"},
-        {"name": "ticket-atc", "type": "text", "existing_id": "1228668601687343155"},
-        {"name": "questions", "type": "text", "existing_id": "1228752524677222430"}
+        {"name": "🚨・ticket-support", "type": "text", "existing_id": "1314609406029070447"},
+        {"name": "🎧・ticket-atc", "type": "text", "existing_id": "1228668601687343155"},
+        {"name": "❓・questions", "type": "text", "existing_id": "1228752524677222430"}
       ]
     },
     {
@@ -503,16 +527,21 @@
       "overrides": {
         "@everyone": {"deny": ["view_channel"]},
         "Non vérifié": {"deny": ["view_channel"]},
-        "Membre": {"allow": ["view_channel", "read_message_history"], "deny": ["send_messages"]},
-        "Responsable documentation": {"allow": ["send_messages", "manage_messages", "manage_threads", "manage_webhooks"]},
-        "Modérateur": {"allow": ["send_messages", "manage_messages"]}
+        "Membre": {"allow": ["view_channel", "read_message_history", "add_reactions"], "deny": ["send_messages"]},
+        "Helper": {"allow": ["send_messages"]},
+        "Modérateur": {"allow": ["send_messages", "manage_messages"]},
+        "Responsable documentation": {"allow": ["send_messages", "manage_messages", "manage_threads", "manage_webhooks", "embed_links", "attach_files"]},
+        "Administrateur": {"allow": ["send_messages", "manage_messages", "manage_channels"]},
+        "Directeur communauté": {"allow": ["send_messages", "manage_messages"]},
+        "Antilles - Outre Mer": {"allow": ["view_channel", "send_messages", "embed_links", "attach_files"]},
+        "Muted": {"deny": ["send_messages", "add_reactions"]}
       },
       "channels": [
-        {"name": "martinique-guadeloupe", "type": "text", "existing_id": "1228753418571481260"},
-        {"name": "piarco-fir", "type": "text", "existing_id": "1228753452063002684"},
-        {"name": "guyane", "type": "text", "existing_id": "1228753477874749440"},
-        {"name": "afis", "type": "text", "existing_id": "1263262580407926958"},
-        {"name": "ivao-phraséologie", "type": "text", "existing_id": "1228753530932957195"}
+        {"name": "🌴・martinique-guadeloupe", "type": "text", "existing_id": "1228753418571481260"},
+        {"name": "🌊・piarco-fir", "type": "text", "existing_id": "1228753452063002684"},
+        {"name": "🌳・guyane", "type": "text", "existing_id": "1228753477874749440"},
+        {"name": "🎙・afis", "type": "text", "existing_id": "1263262580407926958"},
+        {"name": "🗣・ivao-phraséologie", "type": "text", "existing_id": "1228753530932957195"}
       ]
     },
     {
@@ -523,25 +552,52 @@
         "@everyone": {"deny": ["view_channel"]},
         "Non vérifié": {"deny": ["view_channel"]},
         "Membre": {"deny": ["view_channel"]},
-        "Helper": {"allow": ["view_channel", "send_messages", "read_message_history"]},
-        "Modérateur": {"allow": ["view_channel", "send_messages", "read_message_history", "manage_messages"]},
-        "Responsable accueil": {"allow": ["view_channel", "send_messages", "read_message_history"]},
-        "Responsable événements": {"allow": ["view_channel", "send_messages", "read_message_history"]},
-        "Responsable aviation": {"allow": ["view_channel", "send_messages", "read_message_history"]},
-        "Responsable communauté": {"allow": ["view_channel", "send_messages", "read_message_history"]},
-        "Responsable documentation": {"allow": ["view_channel", "send_messages", "read_message_history"]},
-        "Responsable partenariats": {"allow": ["view_channel", "send_messages", "read_message_history"]},
-        "Administrateur": {"allow": ["view_channel", "send_messages", "read_message_history", "manage_channels", "manage_messages"]},
-        "Directeur communauté": {"allow": ["view_channel", "send_messages", "read_message_history"]}
+        "Helper": {"allow": ["view_channel", "send_messages", "read_message_history", "embed_links", "attach_files"]},
+        "Modérateur": {"allow": ["view_channel", "send_messages", "read_message_history", "manage_messages", "manage_threads", "embed_links", "attach_files"]},
+        "Responsable accueil": {"allow": ["view_channel", "send_messages", "read_message_history", "embed_links", "attach_files"]},
+        "Responsable événements": {"allow": ["view_channel", "send_messages", "read_message_history", "embed_links", "attach_files"]},
+        "Responsable aviation": {"allow": ["view_channel", "send_messages", "read_message_history", "embed_links", "attach_files"]},
+        "Responsable communauté": {"allow": ["view_channel", "send_messages", "read_message_history", "embed_links", "attach_files"]},
+        "Responsable documentation": {"allow": ["view_channel", "send_messages", "read_message_history", "embed_links", "attach_files"]},
+        "Responsable partenariats": {"allow": ["view_channel", "send_messages", "read_message_history", "embed_links", "attach_files"]},
+        "Administrateur": {"allow": ["view_channel", "send_messages", "read_message_history", "manage_channels", "manage_messages", "embed_links", "attach_files"]},
+        "Directeur communauté": {"allow": ["view_channel", "send_messages", "read_message_history", "manage_channels", "manage_messages", "embed_links", "attach_files"]},
+        "Antilles - Outre Mer": {"allow": ["view_channel", "send_messages", "embed_links", "attach_files"]}
       },
       "channels": [
-        {"name": "staff-admin", "type": "text", "existing_id": "1427074168444289206", "overrides": {"Helper": {"deny": ["view_channel"]}, "Modérateur": {"deny": ["view_channel"]}}},
-        {"name": "staff-général", "type": "text", "existing_id": "1314690895576170597"},
-        {"name": "staff-modération", "type": "text", "existing_id": "1228454882202226839"},
-        {"name": "staff-atc", "type": "text", "existing_id": "1314697925972070442"},
-        {"name": "staff-events", "type": "text", "existing_id": "1314698502101663824"},
-        {"name": "staff-technique", "type": "text", "existing_id": "1356619544034283792", "overrides": {"Helper": {"deny": ["view_channel"]}}},
-        {"name": "logs", "type": "text", "existing_id": "1488492151317860443", "overrides": {"Helper": {"deny": ["view_channel"]}}}
+        {"name": "🔐・staff-admin", "type": "text", "existing_id": "1427074168444289206", "overrides": {
+          "Helper": {"deny": ["view_channel"]},
+          "Modérateur": {"deny": ["view_channel"]},
+          "Responsable événements": {"deny": ["view_channel"]},
+          "Responsable aviation": {"deny": ["view_channel"]},
+          "Responsable communauté": {"deny": ["view_channel"]},
+          "Responsable documentation": {"deny": ["view_channel"]},
+          "Responsable partenariats": {"deny": ["view_channel"]}
+        }},
+        {"name": "💬・staff-général", "type": "text", "existing_id": "1314690895576170597"},
+        {"name": "🔨・staff-modération", "type": "text", "existing_id": "1228454882202226839"},
+        {"name": "✈・staff-atc", "type": "text", "existing_id": "1314697925972070442", "overrides": {
+          "Responsable communauté": {"deny": ["send_messages"]},
+          "Responsable documentation": {"deny": ["send_messages"]},
+          "Responsable partenariats": {"deny": ["send_messages"]}
+        }},
+        {"name": "🎉・staff-events", "type": "text", "existing_id": "1314698502101663824"},
+        {"name": "⚙・staff-technique", "type": "text", "existing_id": "1356619544034283792", "overrides": {
+          "Helper": {"deny": ["view_channel"]},
+          "Responsable accueil": {"deny": ["view_channel"]},
+          "Responsable événements": {"deny": ["view_channel"]},
+          "Responsable aviation": {"deny": ["view_channel"]},
+          "Responsable communauté": {"deny": ["view_channel"]},
+          "Responsable partenariats": {"deny": ["view_channel"]}
+        }},
+        {"name": "📋・logs", "type": "text", "existing_id": "1488492151317860443", "overrides": {
+          "Helper": {"deny": ["view_channel"]},
+          "Responsable événements": {"deny": ["view_channel"]},
+          "Responsable aviation": {"deny": ["view_channel"]},
+          "Responsable communauté": {"deny": ["view_channel"]},
+          "Responsable documentation": {"deny": ["view_channel"]},
+          "Responsable partenariats": {"deny": ["view_channel"]}
+        }}
       ]
     },
     {
@@ -552,16 +608,32 @@
         "@everyone": {"deny": ["view_channel"]},
         "Non vérifié": {"deny": ["view_channel"]},
         "Membre": {"deny": ["view_channel"]},
-        "Pilote": {"allow": ["view_channel", "send_messages", "read_message_history"]},
-        "Contrôleur": {"allow": ["view_channel", "send_messages", "read_message_history"]},
-        "AFIS": {"allow": ["view_channel", "send_messages", "read_message_history"]},
-        "Modérateur": {"allow": ["view_channel", "send_messages", "manage_messages"]}
+        "Pilote": {"deny": ["view_channel"]},
+        "Contrôleur": {"deny": ["view_channel"]},
+        "AFIS": {"deny": ["view_channel"]},
+        "TPK": {"allow": [
+          "view_channel", "send_messages", "read_message_history",
+          "attach_files", "embed_links", "add_reactions",
+          "connect", "speak", "use_voice_activation",
+          "create_public_threads", "send_messages_in_threads"
+        ]},
+        "Helper": {"allow": ["view_channel", "send_messages", "read_message_history"]},
+        "Modérateur": {"allow": ["view_channel", "send_messages", "read_message_history", "manage_messages", "manage_threads"]},
+        "Responsable accueil": {"allow": ["view_channel", "read_message_history"]},
+        "Responsable événements": {"allow": ["view_channel", "send_messages", "read_message_history"]},
+        "Responsable aviation": {"allow": ["view_channel", "send_messages", "read_message_history"]},
+        "Responsable communauté": {"allow": ["view_channel", "read_message_history"]},
+        "Responsable documentation": {"allow": ["view_channel", "read_message_history"]},
+        "Responsable partenariats": {"allow": ["view_channel", "read_message_history"]},
+        "Administrateur": {"allow": ["view_channel", "send_messages", "read_message_history", "manage_messages", "manage_channels"]},
+        "Directeur communauté": {"allow": ["view_channel", "send_messages", "read_message_history", "manage_messages"]},
+        "Muted": {"deny": ["send_messages", "speak", "add_reactions"]}
       },
       "channels": [
-        {"name": "discussion-va", "type": "text", "existing_id": "1414654429587701770"},
-        {"name": "docs-importants", "type": "text", "existing_id": "1414656453276602560"},
-        {"name": "logs-va", "type": "text", "existing_id": "1379093769202176141"},
-        {"name": "idées-livrées", "type": "text", "existing_id": "1415053184539431033"}
+        {"name": "💬・discussion-va", "type": "text", "existing_id": "1414654429587701770"},
+        {"name": "📚・docs-importants", "type": "text", "existing_id": "1414656453276602560"},
+        {"name": "📓・logs-va", "type": "text", "existing_id": "1379093769202176141"},
+        {"name": "💡・idées-livrées", "type": "text", "existing_id": "1415053184539431033"}
       ]
     }
   ]

@@ -283,6 +283,156 @@ class StructureGuard(commands.Cog):
         await interaction.followup.send(f"✅ Salon `#{ch.name}` créé dans `{parent.name}`", ephemeral=True)
 
     # ------------------------------------------------------------------
+    # /structure apply-target
+    # ------------------------------------------------------------------
+    # Commande "tout-en-un" : renomme les salons selon target, réécrit les
+    # overrides catégorie, synchronise tous les salons enfants, applique les
+    # overrides spécifiques de salon.
+
+    @structure.command(
+        name="apply-target",
+        description="Applique le v2_target.json complet : renames + permissions",
+    )
+    @require_governance()
+    async def apply_target(self, interaction: discord.Interaction) -> None:
+        await interaction.response.defer(ephemeral=True, thinking=True)
+        guild = interaction.guild
+        target = load_target()
+        role_by_name: dict[str, discord.Role] = {r.name: r for r in guild.roles}
+
+        def resolve(ref: str):
+            if ref == "@everyone":
+                return guild.default_role
+            return role_by_name.get(ref)
+
+        stats = {"cats_renamed": 0, "channels_renamed": 0, "cats_synced": 0,
+                 "channels_synced": 0, "ch_overrides": 0, "errors": 0}
+        errors: list[str] = []
+
+        for cat_spec in target.get("categories", []):
+            cat_name = cat_spec.get("name")
+            cat = None
+            if cat_spec.get("existing_id"):
+                cat = guild.get_channel(int(cat_spec["existing_id"]))
+                if not isinstance(cat, discord.CategoryChannel):
+                    cat = None
+            if cat is None and cat_spec.get("old_name"):
+                cat = discord.utils.get(guild.categories, name=cat_spec["old_name"])
+            if cat is None:
+                cat = discord.utils.get(guild.categories, name=cat_name)
+            if cat is None:
+                errors.append(f"Cat introuvable: {cat_name}")
+                stats["errors"] += 1
+                continue
+
+            # 1. Renommer la catégorie si besoin
+            if cat.name != cat_name:
+                try:
+                    await cat.edit(name=cat_name, reason="apply-target — rename cat")
+                    stats["cats_renamed"] += 1
+                except discord.Forbidden:
+                    errors.append(f"Refus rename cat: {cat.name}")
+                    stats["errors"] += 1
+
+            # 2. Renommer les salons cibles si besoin
+            for ch_spec in cat_spec.get("channels", []):
+                target_ch_name = ch_spec.get("name")
+                ch = None
+                if ch_spec.get("existing_id"):
+                    ch = guild.get_channel(int(ch_spec["existing_id"]))
+                if ch is None:
+                    continue
+                if ch.name != target_ch_name:
+                    try:
+                        await ch.edit(name=target_ch_name,
+                                      reason="apply-target — rename salon")
+                        stats["channels_renamed"] += 1
+                    except discord.Forbidden:
+                        errors.append(f"Refus rename salon: {ch.name}")
+                        stats["errors"] += 1
+
+            # 3. Réécrire entièrement les overrides de la catégorie
+            cat_overwrites: dict = {}
+            for ref, spec in cat_spec.get("overrides", {}).items():
+                tgt = resolve(ref)
+                if tgt is None:
+                    errors.append(f"Override cat `{cat_name}` : rôle `{ref}` introuvable")
+                    continue
+                cat_overwrites[tgt] = perm_dict_to_overwrite(
+                    spec.get("allow", []), spec.get("deny", [])
+                )
+            try:
+                await cat.edit(overwrites=cat_overwrites,
+                               reason="apply-target — overrides catégorie")
+                stats["cats_synced"] += 1
+            except discord.Forbidden:
+                errors.append(f"Refus overrides cat: {cat_name}")
+                stats["errors"] += 1
+                continue
+
+            # 4. Sync TOUS les salons enfants sur la cat (héritage propre)
+            for ch in cat.channels:
+                try:
+                    await ch.edit(sync_permissions=True,
+                                  reason="apply-target — sync sur cat")
+                    stats["channels_synced"] += 1
+                except discord.Forbidden:
+                    errors.append(f"Refus sync salon: {ch.name}")
+                    stats["errors"] += 1
+                except discord.HTTPException as e:
+                    errors.append(f"HTTP sync {ch.name}: {e}")
+                    stats["errors"] += 1
+
+            # 5. Réappliquer overrides spécifiques de salon (après sync)
+            for ch_spec in cat_spec.get("channels", []):
+                if not ch_spec.get("overrides"):
+                    continue
+                ch = None
+                if ch_spec.get("existing_id"):
+                    ch = guild.get_channel(int(ch_spec["existing_id"]))
+                if ch is None:
+                    ch = discord.utils.get(cat.channels, name=ch_spec["name"])
+                if ch is None:
+                    continue
+                for ref, spec in ch_spec["overrides"].items():
+                    tgt = resolve(ref)
+                    if tgt is None:
+                        continue
+                    ow = perm_dict_to_overwrite(spec.get("allow", []), spec.get("deny", []))
+                    try:
+                        await ch.set_permissions(tgt, overwrite=ow,
+                                                 reason="apply-target — override salon")
+                        stats["ch_overrides"] += 1
+                    except discord.Forbidden:
+                        errors.append(f"Refus override {ch.name}/{ref}")
+                        stats["errors"] += 1
+
+        lines = [
+            "✅ **apply-target terminé**",
+            f"• Catégories renommées : {stats['cats_renamed']}",
+            f"• Salons renommés : {stats['channels_renamed']}",
+            f"• Catégories overrides MAJ : {stats['cats_synced']}",
+            f"• Salons synchronisés sur cat : {stats['channels_synced']}",
+            f"• Overrides salon réappliqués : {stats['ch_overrides']}",
+        ]
+        if errors:
+            lines.append(f"\n⚠️ **Erreurs ({stats['errors']})** :")
+            for e in errors[:15]:
+                lines.append(f"• {e}")
+            if len(errors) > 15:
+                lines.append(f"… et {len(errors) - 15} de plus")
+        text = "\n".join(lines)
+        if len(text) <= 1900:
+            await interaction.followup.send(text, ephemeral=True)
+        else:
+            buf = io.BytesIO(text.encode("utf-8"))
+            await interaction.followup.send(
+                "Rapport long, fichier joint.",
+                file=discord.File(buf, filename="apply_target.md"),
+                ephemeral=True,
+            )
+
+    # ------------------------------------------------------------------
     # /structure resync-permissions
     # ------------------------------------------------------------------
 
