@@ -82,6 +82,283 @@ AVIATION_PANEL_OPTIONS: list[dict] = [
 GOVERNANCE_ROLES = {"Directeur communauté", "Administrateur"}
 
 
+def _build_role_cards() -> list[dict]:
+    """Fiches de poste basées sur le cahier technique V2 (PDF interne).
+
+    L'ordre suit la hiérarchie : gouvernance, pôles, modération, technique.
+    """
+    return [
+        # Gouvernance
+        {
+            "block": "Gouvernance",
+            "role_name": "Directeur communauté",
+            "emoji": "👑",
+            "catchphrase": "Pilotage global, arbitrage, vision",
+            "mission": (
+                "Définir la direction du serveur, arbitrer les décisions sensibles "
+                "et porter la vision communautaire. Premier décisionnaire en cas de conflit "
+                "entre staffs."
+            ),
+            "scope": (
+                "Toutes les zones du serveur. Décisions structurelles "
+                "(création/suppression de rôles, refontes, partenariats stratégiques)."
+            ),
+            "perms": "Administrator complet (V2 §3.1)",
+            "limits": (
+                "1 à 3 personnes maximum. Doit déléguer aux Responsables plutôt qu'agir "
+                "à leur place."
+            ),
+            "profile": "Membre de confiance, vue d'ensemble, sens de la médiation.",
+        },
+        {
+            "block": "Gouvernance",
+            "role_name": "Administrateur",
+            "emoji": "🛡️",
+            "catchphrase": "Gestion structurelle du serveur",
+            "mission": (
+                "Maintenir et faire évoluer la structure technique du serveur : rôles, "
+                "salons, catégories, intégrations bots, permissions."
+            ),
+            "scope": (
+                "Configuration du serveur, gestion des bots, supervision des modérateurs, "
+                "application des décisions du Directeur communauté."
+            ),
+            "perms": (
+                "Manage Server, Manage Roles, Manage Channels, Manage Messages, "
+                "Ban/Kick, View Audit Log"
+            ),
+            "limits": (
+                "Pas d'Administrator brut (réservé au Directeur communauté). Pas plus "
+                "que nécessaire pour la mission (V2 §3.1)."
+            ),
+            "profile": "Profil technique, organisé, rigoureux sur les permissions.",
+        },
+
+        # Pôles opérationnels
+        {
+            "block": "Pôle opérationnel",
+            "role_name": "Responsable événements",
+            "emoji": "🎉",
+            "catchphrase": "Pilote l'animation du serveur",
+            "mission": (
+                "Organiser et animer les événements de la communauté : vols de groupe, "
+                "concours, soirées thématiques, annonces d'événements."
+            ),
+            "scope": (
+                "Salon `🎉・staff-events`, écriture validée dans `📣・annonces`, "
+                "création d'events Discord, coordination avec les autres responsables."
+            ),
+            "perms": "Manage Events, Create Events, Mention Everyone (sur annonces)",
+            "limits": (
+                "Annonces publiques nécessitent validation préalable. Ne crée pas "
+                "d'événements concurrents à ceux déjà planifiés."
+            ),
+            "profile": "Créatif, organisé, disponible pour planifier en avance.",
+        },
+        {
+            "block": "Pôle opérationnel",
+            "role_name": "Responsable aviation",
+            "emoji": "✈️",
+            "catchphrase": "Structure le pôle contrôle et pilote",
+            "mission": (
+                "Coordonner les activités ATC et pilotes : créneaux de contrôle, briefings, "
+                "contenus aviation, lien avec les structures officielles IVAO."
+            ),
+            "scope": (
+                "Salon `✈・staff-atc`, écriture dans les salons applicatifs ATC, "
+                "organisation des sessions de vol et de contrôle."
+            ),
+            "perms": "Manage Threads, écriture dans salons ATC dédiés",
+            "limits": (
+                "Pas de modération générale (réservée aux Modérateurs). Pas de "
+                "décisions structurelles."
+            ),
+            "profile": "Pilote ou contrôleur expérimenté, connaît IVAO, sens du briefing.",
+        },
+        {
+            "block": "Pôle opérationnel",
+            "role_name": "Responsable communauté",
+            "emoji": "🤝",
+            "catchphrase": "Suit la vie du serveur hors modération",
+            "mission": (
+                "Veiller à l'ambiance, intégrer les nouveaux réguliers, faire remonter "
+                "les idées et suggestions, fluidifier la vie communautaire."
+            ),
+            "scope": (
+                "Salons de la catégorie `💬 ▸ COMMUNAUTÉ`, `💡・suggestions`, "
+                "interactions avec les Helpers pour l'onboarding."
+            ),
+            "perms": "Manage Messages (ciblé), Manage Threads",
+            "limits": (
+                "N'est pas un modérateur — pas de sanctions. Travaille en lien avec "
+                "Helper et Responsable accueil."
+            ),
+            "profile": "Sociable, à l'écoute, présent régulièrement sur le serveur.",
+        },
+        {
+            "block": "Pôle opérationnel",
+            "role_name": "Responsable documentation",
+            "emoji": "📚",
+            "catchphrase": "Tient à jour la base documentaire",
+            "mission": (
+                "Maintenir les docs aviation, la phraséologie, les NOTAMs et la structure "
+                "informationnelle du serveur. Améliorer la qualité perçue de la documentation."
+            ),
+            "scope": (
+                "Catégorie `📚 ▸ DOCUMENTATION` (martinique-guadeloupe, piarco-fir, "
+                "guyane, afis, ivao-phraséologie, notams-updates) et `🔧・changelog`."
+            ),
+            "perms": (
+                "Send Messages, Manage Messages, Manage Threads, Manage Webhooks "
+                "dans la documentation"
+            ),
+            "limits": (
+                "Modifications majeures soumises à validation. Pas de modification "
+                "des règles du serveur."
+            ),
+            "profile": "Méthodique, soucieux du détail, à l'aise avec les sources IVAO.",
+        },
+        {
+            "block": "Pôle opérationnel",
+            "role_name": "Responsable partenariats",
+            "emoji": "🤝",
+            "catchphrase": "Gère les liens externes validés",
+            "mission": (
+                "Identifier, négocier et entretenir les partenariats avec d'autres "
+                "communautés ou structures aviation. Valoriser les collaborations."
+            ),
+            "scope": (
+                "Salon `🤝・partenaires`, écriture dans annonces selon validation, "
+                "communication externe au nom du serveur."
+            ),
+            "perms": "Manage Webhooks, Create Instant Invite",
+            "limits": (
+                "Toute mise en avant nécessite validation du Directeur communauté. "
+                "Pas d'engagements financiers sans accord."
+            ),
+            "profile": "Bon relationnel, fiable dans ses engagements.",
+        },
+
+        # Modération
+        {
+            "block": "Modération",
+            "role_name": "Modérateur",
+            "emoji": "🔨",
+            "catchphrase": "Modération de la communauté",
+            "mission": (
+                "Faire respecter le règlement, gérer les incidents, sanctionner les "
+                "comportements problématiques, intervenir dans les conflits."
+            ),
+            "scope": (
+                "Ensemble des salons publics. Salon `🔨・staff-modération` pour la "
+                "coordination interne."
+            ),
+            "perms": (
+                "Timeout, Kick, Ban, Manage Messages, Move Members, Mute/Deafen, "
+                "View Audit Log"
+            ),
+            "limits": (
+                "Pas de Manage Server (V2 §3.3). Décisions de ban prolongé soumises "
+                "à validation collégiale."
+            ),
+            "profile": "Calme sous pression, juste, capable de désamorcer un conflit.",
+        },
+        {
+            "block": "Modération",
+            "role_name": "Helper",
+            "emoji": "🙋",
+            "catchphrase": "Accueil, aide, orientation, tickets simples",
+            "mission": (
+                "Accueillir les nouveaux membres, répondre aux questions de base, "
+                "traiter les tickets simples, orienter vers les bonnes ressources."
+            ),
+            "scope": (
+                "Tickets de support général, salons d'accueil, questions/aide. "
+                "Premier point de contact pour les nouveaux."
+            ),
+            "perms": "Manage Messages (léger), Timeout léger, Move Members, Manage Threads",
+            "limits": (
+                "Pas de Kick/Ban. Pas de permissions structurelles. "
+                "Escalade les cas complexes vers Modérateur."
+            ),
+            "profile": "Patient, pédagogue, disponible.",
+        },
+        {
+            "block": "Modération",
+            "role_name": "Responsable accueil",
+            "emoji": "👋",
+            "catchphrase": "Première ligne d'intégration des nouveaux",
+            "mission": (
+                "Superviser le parcours d'accueil, valider les présentations, fluidifier "
+                "le passage `Non vérifié` → `Membre` quand nécessaire."
+            ),
+            "scope": (
+                "Catégorie `👋 ▸ ACCUEIL`, supervision des Helpers, suivi du système "
+                "de validation du règlement."
+            ),
+            "perms": "Kick, Ban, Manage Messages, Move Members, Mute/Deafen",
+            "limits": (
+                "Pas de modération générale en dehors de l'accueil. Travaille en lien "
+                "avec les Helpers."
+            ),
+            "profile": "Accueillant, organisé, sait gérer un afflux de nouveaux.",
+        },
+
+        # Technique / Bots
+        {
+            "block": "Technique",
+            "role_name": "Antilles - Outre Mer",
+            "emoji": "🤖",
+            "catchphrase": "Bot principal du serveur",
+            "mission": (
+                "Faire tourner l'écosystème automatisé : tickets, accueil, panneaux "
+                "régions, stats ATC, booking, METAR, monitoring."
+            ),
+            "scope": "Toutes les opérations automatisées du serveur.",
+            "perms": "Administrator (exception V2 §3.4 — le code l'exige réellement)",
+            "limits": (
+                "Doit rester au-dessus des rôles qu'il gère. Modifications du bot "
+                "uniquement par l'équipe technique."
+            ),
+            "profile": "Pas humain.",
+        },
+        {
+            "block": "Communauté",
+            "role_name": "Membre",
+            "emoji": "🌴",
+            "catchphrase": "Rôle pivot d'accès au serveur",
+            "mission": (
+                "Participer activement à la vie du serveur dans les salons communautaires, "
+                "vocaux, et applicatifs."
+            ),
+            "scope": (
+                "Toutes les catégories publiques (Communauté, Informations, Outils ATC, "
+                "Support, Documentation)."
+            ),
+            "perms": (
+                "Lecture/écriture dans communauté, vocaux complets (soundboard, "
+                "voice messages, activités, streaming), réactions, threads"
+            ),
+            "limits": "Pas d'accès au Staff ni à Fly Tropik (réservé TPK).",
+            "profile": "Toute personne ayant accepté le règlement.",
+        },
+        {
+            "block": "Communauté",
+            "role_name": "Non vérifié",
+            "emoji": "🚪",
+            "catchphrase": "Sas d'entrée du serveur",
+            "mission": "État transitoire avant validation du règlement.",
+            "scope": "Catégorie `👋 ▸ ACCUEIL` + `🎫 ▸ SUPPORT` uniquement.",
+            "perms": "Lecture des règles, écriture dans présentation, ouverture de tickets",
+            "limits": "Aucun accès aux salons communautaires tant que pas validé.",
+            "profile": "Tout nouveau membre arrivant sur le serveur (auto-attribué).",
+        },
+    ]
+
+
+
+
+
 def _is_governance(interaction: discord.Interaction) -> bool:
     if interaction.guild is None:
         return False
@@ -1201,6 +1478,68 @@ class StructureGuard(commands.Cog):
     # ------------------------------------------------------------------
     # /structure finalize  +  /structure cleanup-archive
     # ------------------------------------------------------------------
+
+    @structure.command(
+        name="post-role-cards",
+        description="Poste les fiches de poste de tous les rôles V2 (selon cahier technique)",
+    )
+    @app_commands.describe(channel="Salon où poster les fiches (typiquement #💬・staff-général)")
+    @require_governance()
+    async def post_role_cards(self, interaction: discord.Interaction,
+                               channel: discord.TextChannel) -> None:
+        await interaction.response.defer(ephemeral=True, thinking=True)
+        guild = interaction.guild
+
+        cards = _build_role_cards()
+
+        # Message d'intro
+        intro = discord.Embed(
+            title="📋 Fiches de poste — Rôles V2",
+            description=(
+                "Vous trouverez ci-dessous **les fiches de poste** des rôles du serveur "
+                "selon le cahier technique V2.\n\n"
+                "Chaque fiche décrit la mission, le périmètre d'action, les permissions "
+                "clés et les limites du rôle. Référez-vous y en cas de doute sur "
+                "qui fait quoi."
+            ),
+            color=discord.Color.from_rgb(28, 168, 102),
+        )
+        intro.set_footer(text="🌴 Antilles - OM • Refonte V2")
+        try:
+            await channel.send(embed=intro)
+        except discord.Forbidden:
+            await interaction.followup.send("❌ Permission refusée.", ephemeral=True)
+            return
+
+        posted = 0
+        for card in cards:
+            role = discord.utils.get(guild.roles, name=card["role_name"])
+            color = role.color if role and role.color.value != 0 else discord.Color.dark_grey()
+
+            embed = discord.Embed(
+                title=f"{card['emoji']} {card['role_name']}",
+                description=f"*{card['catchphrase']}*",
+                color=color,
+            )
+            embed.add_field(name="🎯 Mission", value=card["mission"], inline=False)
+            embed.add_field(name="🗂️ Périmètre", value=card["scope"], inline=False)
+            embed.add_field(name="🔑 Permissions clés", value=card["perms"], inline=False)
+            if card.get("limits"):
+                embed.add_field(name="🚫 Limites", value=card["limits"], inline=False)
+            if card.get("profile"):
+                embed.add_field(name="👤 Profil", value=card["profile"], inline=False)
+            embed.set_footer(text=f"Bloc : {card['block']}")
+            try:
+                await channel.send(embed=embed)
+                posted += 1
+                await asyncio.sleep(0.7)  # rate limit gentil
+            except discord.Forbidden:
+                break
+
+        await interaction.followup.send(
+            f"✅ **{posted} fiches de poste** postées dans {channel.mention}.",
+            ephemeral=True,
+        )
 
     @structure.command(
         name="finalize",
