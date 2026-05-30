@@ -6,8 +6,11 @@ REPO_URL = "https://github.com/favoniuskey/antilles-om-bot.git"
 WORKDIR = "/home/container"
 
 if os.path.isdir(os.path.join(WORKDIR, ".git")):
-    print("[start.py] Git repo détecté, pull en cours...")
-    subprocess.run(["git", "pull"], cwd=WORKDIR)
+    print("[start.py] Git repo détecté, sync sur origin/main...")
+    subprocess.run(["git", "fetch", "origin"], cwd=WORKDIR)
+    # Ditch toute modif locale (le container ne doit pas avoir d'éditions locales)
+    subprocess.run(["git", "reset", "--hard"], cwd=WORKDIR)
+    subprocess.run(["git", "checkout", "-B", "main", "origin/main"], cwd=WORKDIR)
 else:
     print("[start.py] Initialisation du repo git...")
     subprocess.run(["git", "init"], cwd=WORKDIR)

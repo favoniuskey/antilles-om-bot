@@ -1,7 +1,8 @@
 #!/bin/sh
 cd /home/container
 if [ -d .git ]; then
-    git pull
+    git fetch origin
+    git checkout -B main origin/main
 else
     git clone https://github.com/favoniuskey/antilles-om-bot.git .
 fi
