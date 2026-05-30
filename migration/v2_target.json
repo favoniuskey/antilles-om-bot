@@ -52,52 +52,67 @@
       "hoist": true,
       "mentionable": true,
       "position_rel": 80,
-      "permissions": ["manage_events", "create_events", "create_instant_invite", "mention_everyone"],
-      "_note": "Anime vols de groupe, concours, annonces d'événements."
+      "permissions": ["manage_events", "create_events", "create_instant_invite"],
+      "_note": "Rôle conservé mais peu pertinent actuellement (PDF Les rôles). Resp aviation s'occupe de l'animation events."
     },
     {
       "_block": "Pôles opérationnels",
       "name": "Responsable aviation",
-      "_origin": "new",
+      "_origin": "existing",
+      "existing_id": "1506391633078522027",
       "color": 2067276,
       "hoist": true,
       "mentionable": true,
       "position_rel": 78,
-      "permissions": ["create_instant_invite", "manage_threads"],
-      "_note": "Structure le pôle contrôle/pilote, briefings, créneaux ATC."
+      "permissions": [
+        "create_instant_invite", "manage_roles", "manage_threads",
+        "priority_speaker", "view_audit_log", "mention_everyone",
+        "manage_events", "create_events"
+      ],
+      "_note": "Anime aviation, gère les Helpers (manage_roles), admin vocaux coin pilotes/contrôleurs (overrides cat)."
     },
     {
       "_block": "Pôles opérationnels",
       "name": "Responsable communauté",
-      "_origin": "new",
+      "_origin": "existing",
+      "existing_id": "1506391634269442129",
       "color": 3066993,
       "hoist": true,
       "mentionable": true,
       "position_rel": 76,
-      "permissions": ["manage_messages", "manage_threads", "create_instant_invite"],
-      "_note": "Suit la vie du serveur hors modération."
+      "permissions": [
+        "create_instant_invite", "manage_nicknames", "manage_roles",
+        "manage_messages", "manage_threads", "manage_channels",
+        "mention_everyone", "moderate_members", "view_audit_log",
+        "move_members", "mute_members", "deafen_members", "kick_members"
+      ],
+      "_note": "Gère pseudos + Modérateurs + outils de modération sur tous salons publics + admin Accueil et annonces (PDF Les rôles)."
     },
     {
       "_block": "Pôles opérationnels",
       "name": "Responsable documentation",
-      "_origin": "new",
+      "_origin": "existing",
+      "existing_id": "1506391635678855340",
       "color": 15105570,
       "hoist": true,
       "mentionable": true,
       "position_rel": 74,
-      "permissions": ["manage_threads", "manage_webhooks"],
-      "_note": "Tient à jour la base documentaire (phraséologie, notams, docs aviation)."
+      "permissions": [
+        "create_instant_invite", "manage_threads", "manage_webhooks"
+      ],
+      "_note": "Admin catégorie DOCUMENTATION (override cat). Connaissance VAC/EAIP/MANEX/SIA."
     },
     {
       "_block": "Pôles opérationnels",
       "name": "Responsable partenariats",
-      "_origin": "new",
+      "_origin": "existing",
+      "existing_id": "1506385013791391745",
       "color": 15844367,
       "hoist": true,
       "mentionable": true,
       "position_rel": 72,
-      "permissions": ["manage_webhooks", "create_instant_invite"],
-      "_note": "Facultatif selon V2 §3.2 — créé tel que validé."
+      "permissions": ["create_instant_invite", "manage_webhooks"],
+      "_note": "Rôle conservé mais peu pertinent actuellement (PDF Les rôles)."
     },
 
     {
@@ -126,11 +141,8 @@
       "hoist": false,
       "mentionable": false,
       "position_rel": 60,
-      "permissions": [
-        "manage_messages", "moderate_members",
-        "move_members", "create_instant_invite", "manage_threads"
-      ],
-      "_note": "Accueil/aide/orientation, pas de perms structurelles."
+      "permissions": ["create_instant_invite"],
+      "_note": "Aucun droit particulier par défaut (PDF Les rôles). Responsable aviation lui attribue les droits via overrides selon les besoins."
     },
     {
       "_block": "Modération",
@@ -412,6 +424,12 @@
         "@everyone": {"deny": ["view_channel"]},
         "Non vérifié": {"allow": ["view_channel", "read_message_history"], "deny": ["send_messages"]},
         "Membre": {"allow": ["view_channel", "read_message_history"], "deny": ["send_messages"]},
+        "Helper": {"allow": ["view_channel", "read_message_history", "send_messages"]},
+        "Modérateur": {"allow": ["view_channel", "send_messages", "manage_messages", "manage_threads"]},
+        "Responsable communauté": {"allow": ["view_channel", "send_messages", "manage_messages", "manage_channels", "manage_threads", "embed_links", "attach_files", "mention_everyone"]},
+        "Administrateur": {"allow": ["view_channel", "send_messages", "manage_messages", "manage_channels"]},
+        "Directeur communauté": {"allow": ["view_channel", "send_messages", "manage_messages"]},
+        "Antilles - Outre Mer": {"allow": ["view_channel", "send_messages", "manage_messages", "embed_links", "attach_files"]},
         "Muted": {"deny": ["send_messages", "speak", "add_reactions", "send_messages_in_threads"]}
       },
       "channels": [
@@ -433,9 +451,10 @@
         "Non vérifié": {"deny": ["view_channel"]},
         "Membre": {"allow": ["view_channel", "read_message_history", "add_reactions"], "deny": ["send_messages"]},
         "Helper": {"allow": ["send_messages"]},
-        "Modérateur": {"allow": ["send_messages", "mention_everyone", "manage_messages"]},
+        "Modérateur": {"allow": ["send_messages", "mention_everyone", "manage_messages", "manage_threads"]},
         "Responsable événements": {"allow": ["send_messages", "mention_everyone"]},
-        "Administrateur": {"allow": ["send_messages", "manage_messages", "mention_everyone"]},
+        "Responsable communauté": {"allow": ["view_channel", "send_messages", "manage_messages", "manage_channels", "manage_threads", "embed_links", "attach_files", "mention_everyone"]},
+        "Administrateur": {"allow": ["send_messages", "manage_messages", "manage_channels", "mention_everyone"]},
         "Directeur communauté": {"allow": ["send_messages", "manage_messages", "mention_everyone"]},
         "Antilles - Outre Mer": {"allow": ["view_channel", "send_messages", "manage_messages", "embed_links", "attach_files", "mention_everyone"]},
         "Muted": {"deny": ["send_messages", "speak", "add_reactions"]}
@@ -467,7 +486,8 @@
           "send_polls", "use_application_commands"
         ]},
         "Modérateur": {"allow": ["manage_messages", "manage_channels", "mention_everyone", "manage_threads", "move_members", "mute_members", "deafen_members"]},
-        "Responsable communauté": {"allow": ["manage_messages", "manage_threads"]},
+        "Responsable communauté": {"allow": ["manage_messages", "manage_channels", "manage_threads", "mention_everyone", "move_members", "mute_members", "deafen_members"]},
+        "Responsable aviation": {"allow": ["view_channel", "send_messages", "manage_messages", "manage_threads", "move_members", "mute_members", "deafen_members", "priority_speaker", "stream"]},
         "Muted": {"deny": ["send_messages", "speak", "add_reactions", "send_messages_in_threads", "send_voice_messages"]}
       },
       "channels": [
@@ -489,6 +509,8 @@
         "Antilles - Outre Mer": {"allow": ["view_channel", "send_messages", "manage_messages", "embed_links", "attach_files", "mention_everyone"]},
         "Helper": {"allow": ["send_messages"]},
         "Modérateur": {"allow": ["send_messages", "manage_messages"]},
+        "Responsable communauté": {"allow": ["view_channel", "send_messages", "manage_messages", "manage_threads"]},
+        "Responsable aviation": {"allow": ["view_channel", "send_messages", "manage_messages", "manage_threads"]},
         "Muted": {"deny": ["send_messages", "add_reactions"]}
       },
       "channels": [
@@ -514,6 +536,7 @@
         "Membre": {"allow": ["view_channel", "send_messages", "read_message_history", "attach_files", "embed_links", "add_reactions", "create_public_threads", "send_messages_in_threads"]},
         "Helper": {"allow": ["manage_messages", "manage_threads"]},
         "Modérateur": {"allow": ["manage_messages", "manage_channels", "manage_threads"]},
+        "Responsable communauté": {"allow": ["view_channel", "send_messages", "manage_messages", "manage_channels", "manage_threads"]},
         "Antilles - Outre Mer": {"allow": ["view_channel", "send_messages", "manage_messages", "manage_channels", "manage_threads", "embed_links", "attach_files"]},
         "Muted": {"deny": ["send_messages", "speak", "add_reactions", "send_messages_in_threads"]}
       },
@@ -533,7 +556,8 @@
         "Membre": {"allow": ["view_channel", "read_message_history", "add_reactions"], "deny": ["send_messages"]},
         "Helper": {"allow": ["send_messages"]},
         "Modérateur": {"allow": ["send_messages", "manage_messages"]},
-        "Responsable documentation": {"allow": ["send_messages", "manage_messages", "manage_threads", "manage_webhooks", "embed_links", "attach_files"]},
+        "Responsable documentation": {"allow": ["view_channel", "send_messages", "manage_messages", "manage_channels", "manage_threads", "manage_webhooks", "embed_links", "attach_files", "mention_everyone"]},
+        "Responsable communauté": {"allow": ["manage_messages", "manage_threads"]},
         "Administrateur": {"allow": ["send_messages", "manage_messages", "manage_channels"]},
         "Directeur communauté": {"allow": ["send_messages", "manage_messages"]},
         "Antilles - Outre Mer": {"allow": ["view_channel", "send_messages", "embed_links", "attach_files"]},

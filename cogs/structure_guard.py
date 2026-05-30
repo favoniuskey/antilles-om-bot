@@ -139,104 +139,120 @@ def _build_role_cards() -> list[dict]:
             "block": "Pôle opérationnel",
             "role_name": "Responsable événements",
             "emoji": "🎉",
-            "catchphrase": "Pilote l'animation du serveur",
+            "catchphrase": "Peu pertinent actuellement, fusionné avec aviation",
             "mission": (
-                "Organiser et animer les événements de la communauté : vols de groupe, "
-                "concours, soirées thématiques, annonces d'événements."
+                "Rôle conservé en réserve. La restriction à l'aéronautique IVAO du "
+                "serveur laisse peu de marge pour des événements dédiés. Le Responsable "
+                "aviation prend en charge l'animation d'événements aéronautiques."
             ),
             "scope": (
-                "Salon `🎉・staff-events`, écriture validée dans `📣・annonces`, "
-                "création d'events Discord, coordination avec les autres responsables."
+                "Rôle non actif. Réactivable si la communauté évolue vers d'autres "
+                "types d'événements."
             ),
-            "perms": "Manage Events, Create Events, Mention Everyone (sur annonces)",
-            "limits": (
-                "Annonces publiques nécessitent validation préalable. Ne crée pas "
-                "d'événements concurrents à ceux déjà planifiés."
-            ),
-            "profile": "Créatif, organisé, disponible pour planifier en avance.",
+            "perms": "Manage Events, Create Events (en réserve)",
+            "limits": "Tant que non actif, ne pas attribuer à un membre.",
+            "profile": "Non recruté pour l'instant.",
         },
         {
             "block": "Pôle opérationnel",
             "role_name": "Responsable aviation",
             "emoji": "✈️",
-            "catchphrase": "Structure le pôle contrôle et pilote",
+            "catchphrase": "Animateur et soutien aéronautique, gère les Helpers",
             "mission": (
-                "Coordonner les activités ATC et pilotes : créneaux de contrôle, briefings, "
-                "contenus aviation, lien avec les structures officielles IVAO."
+                "Animer le pôle aviation, soutenir les pilotes et contrôleurs, accueillir "
+                "et former les nouveaux. Côté **pilote** : organiser des vols de groupe "
+                "(notamment avec la VA) et des sessions de découverte. Côté **contrôle** : "
+                "être présent sur les fréquences d'Outre-Mer (hebdomadaire), accompagner "
+                "les débutants, organiser des séances de contrôle groupé."
             ),
             "scope": (
-                "Salon `✈・staff-atc`, écriture dans les salons applicatifs ATC, "
-                "organisation des sessions de vol et de contrôle."
+                "Vocaux `🔊・Coin pilotes` et `🔊・Coin contrôleurs` (administration), "
+                "salon `✈・staff-atc`, gestion des Helpers (désignation, orientation, "
+                "formation, renouvellement), événements aviation."
             ),
-            "perms": "Manage Threads, écriture dans salons ATC dédiés",
+            "perms": (
+                "Manage Roles (pour gérer les Helpers), Manage Threads, Manage Events, "
+                "Priority Speaker, View Audit Log, Mention Everyone. Outils de modération "
+                "sur les vocaux pilotes/contrôleurs."
+            ),
             "limits": (
-                "Pas de modération générale (réservée aux Modérateurs). Pas de "
-                "décisions structurelles."
+                "Disponibilité quotidienne attendue. Toute absence prolongée doit être "
+                "signalée à la Direction. Pas de modération générale (rôle du Modérateur)."
             ),
-            "profile": "Pilote ou contrôleur expérimenté, connaît IVAO, sens du briefing.",
+            "profile": (
+                "Pilote OU contrôleur expérimenté (X-Plane / MFS / P3D ou phraséologie "
+                "Outre-Mer). Connaît la différence vrai/simu/IVAO. Pédagogue, disponible, "
+                "actif sur les vocaux."
+            ),
         },
         {
             "block": "Pôle opérationnel",
             "role_name": "Responsable communauté",
             "emoji": "🤝",
-            "catchphrase": "Suit la vie du serveur hors modération",
+            "catchphrase": "Gère l'identité, les Modérateurs, et la modération globale",
             "mission": (
-                "Veiller à l'ambiance, intégrer les nouveaux réguliers, faire remonter "
-                "les idées et suggestions, fluidifier la vie communautaire."
+                "Suivre l'identité de chaque membre (pseudos), rédiger un cahier des charges "
+                "de modération à destination des Modérateurs, orienter les membres sur les "
+                "outils du serveur, et gérer l'équipe de modération."
             ),
             "scope": (
-                "Salons de la catégorie `💬 ▸ COMMUNAUTÉ`, `💡・suggestions`, "
-                "interactions avec les Helpers pour l'onboarding."
+                "Catégorie `👋 ▸ ACCUEIL` et salon `📣・annonces` (administration directe), "
+                "outils de modération sur **tous les salons publics** (textuels et vocaux), "
+                "gestion des Modérateurs (désignation, orientation, attribution des outils, "
+                "renouvellement)."
             ),
-            "perms": "Manage Messages (ciblé), Manage Threads",
+            "perms": (
+                "Manage Nicknames (pseudos), Manage Roles (pour gérer les Modérateurs), "
+                "Manage Messages, Manage Channels, Manage Threads, Moderate Members, "
+                "Move Members, Mute/Deafen, Kick, View Audit Log, Mention Everyone."
+            ),
             "limits": (
-                "N'est pas un modérateur — pas de sanctions. Travaille en lien avec "
-                "Helper et Responsable accueil."
+                "Disponibilité quotidienne attendue. Doit déléguer les outils de "
+                "modération aux Modérateurs plutôt qu'agir directement systématiquement. "
+                "Pas de décisions structurelles."
             ),
-            "profile": "Sociable, à l'écoute, présent régulièrement sur le serveur.",
+            "profile": (
+                "Sociable, sens de l'organisation et de la gestion d'équipe. Capable de "
+                "rédiger des règles de modération claires. Disponible quotidiennement."
+            ),
         },
         {
             "block": "Pôle opérationnel",
             "role_name": "Responsable documentation",
             "emoji": "📚",
-            "catchphrase": "Tient à jour la base documentaire",
+            "catchphrase": "Maintient la base documentaire aviation",
             "mission": (
-                "Maintenir les docs aviation, la phraséologie, les NOTAMs et la structure "
-                "informationnelle du serveur. Améliorer la qualité perçue de la documentation."
+                "Fournir et mettre à jour les documents partagés sur le serveur. Référent "
+                "documentation aéronautique : VAC, EAIP, MANEX, sources IVAO/SIA."
             ),
             "scope": (
-                "Catégorie `📚 ▸ DOCUMENTATION` (martinique-guadeloupe, piarco-fir, "
-                "guyane, afis, ivao-phraséologie, notams-updates) et `🔧・changelog`."
+                "Catégorie `📚 ▸ DOCUMENTATION` (administration complète), "
+                "orientation des membres sur l'usage des documents."
             ),
             "perms": (
-                "Send Messages, Manage Messages, Manage Threads, Manage Webhooks "
-                "dans la documentation"
+                "Send Messages, Manage Messages, Manage Channels, Manage Threads, "
+                "Manage Webhooks dans la catégorie DOCUMENTATION."
             ),
             "limits": (
-                "Modifications majeures soumises à validation. Pas de modification "
-                "des règles du serveur."
+                "Disponibilité quotidienne attendue. Pas d'intervention hors documentation."
             ),
-            "profile": "Méthodique, soucieux du détail, à l'aise avec les sources IVAO.",
+            "profile": (
+                "Incollable sur la doc aéro (VAC, EAIP, MANEX). Connaît les sources "
+                "officielles (IVAO, SIA). Méthodique, rigoureux."
+            ),
         },
         {
             "block": "Pôle opérationnel",
             "role_name": "Responsable partenariats",
             "emoji": "🤝",
-            "catchphrase": "Gère les liens externes validés",
+            "catchphrase": "Peu pertinent actuellement",
             "mission": (
-                "Identifier, négocier et entretenir les partenariats avec d'autres "
-                "communautés ou structures aviation. Valoriser les collaborations."
+                "Rôle conservé en réserve. Pas pertinent dans le contexte actuel du serveur."
             ),
-            "scope": (
-                "Salon `🤝・partenaires`, écriture dans annonces selon validation, "
-                "communication externe au nom du serveur."
-            ),
-            "perms": "Manage Webhooks, Create Instant Invite",
-            "limits": (
-                "Toute mise en avant nécessite validation du Directeur communauté. "
-                "Pas d'engagements financiers sans accord."
-            ),
-            "profile": "Bon relationnel, fiable dans ses engagements.",
+            "scope": "Rôle non actif. Réactivable si des partenariats stratégiques émergent.",
+            "perms": "Manage Webhooks, Create Instant Invite (en réserve)",
+            "limits": "Tant que non actif, ne pas attribuer à un membre.",
+            "profile": "Non recruté pour l'instant.",
         },
 
         # Modération
@@ -244,44 +260,56 @@ def _build_role_cards() -> list[dict]:
             "block": "Modération",
             "role_name": "Modérateur",
             "emoji": "🔨",
-            "catchphrase": "Modération de la communauté",
+            "catchphrase": "Vigilance quotidienne, outils délégués par Resp communauté",
             "mission": (
-                "Faire respecter le règlement, gérer les incidents, sanctionner les "
-                "comportements problématiques, intervenir dans les conflits."
+                "Être extrêmement présent sur les vocaux et textuels au quotidien. "
+                "Vigilance accrue sur le fond des écrits et les propos en vocal, en "
+                "suivant les **lignes directrices rédigées par le Responsable communauté**."
             ),
             "scope": (
                 "Ensemble des salons publics. Salon `🔨・staff-modération` pour la "
                 "coordination interne."
             ),
             "perms": (
+                "Outils de modération **attribués par le Responsable communauté** : "
                 "Timeout, Kick, Ban, Manage Messages, Move Members, Mute/Deafen, "
-                "View Audit Log"
+                "Manage Threads, View Audit Log."
             ),
             "limits": (
-                "Pas de Manage Server (V2 §3.3). Décisions de ban prolongé soumises "
-                "à validation collégiale."
+                "Pas de Manage Server. Suit le cahier des charges du Resp communauté. "
+                "Décisions de ban prolongé soumises à validation collégiale."
             ),
-            "profile": "Calme sous pression, juste, capable de désamorcer un conflit.",
+            "profile": (
+                "Très présent quotidiennement. Calme sous pression, juste, capable "
+                "de désamorcer un conflit."
+            ),
         },
         {
             "block": "Modération",
             "role_name": "Helper",
             "emoji": "🙋",
-            "catchphrase": "Accueil, aide, orientation, tickets simples",
+            "catchphrase": "Soutien au Responsable aviation, droits attribués au cas par cas",
             "mission": (
-                "Accueillir les nouveaux membres, répondre aux questions de base, "
-                "traiter les tickets simples, orienter vers les bonnes ressources."
+                "Participer aux actions du Responsable aviation : accueil des nouveaux "
+                "sur simulateur/IVAO, accompagnement débutants, soutien aux vols de "
+                "groupe et sessions de contrôle."
             ),
             "scope": (
-                "Tickets de support général, salons d'accueil, questions/aide. "
-                "Premier point de contact pour les nouveaux."
+                "Activités aviation du serveur, présence vocale active, premier point "
+                "de contact pour les questions aéro de base."
             ),
-            "perms": "Manage Messages (léger), Timeout léger, Move Members, Manage Threads",
+            "perms": (
+                "**Aucun droit particulier par défaut.** Le Responsable aviation "
+                "attribue des permissions ciblées en fonction des besoins."
+            ),
             "limits": (
-                "Pas de Kick/Ban. Pas de permissions structurelles. "
-                "Escalade les cas complexes vers Modérateur."
+                "Pas de pouvoir de modération sans attribution explicite. Rapporte "
+                "tout problème au Responsable aviation."
             ),
-            "profile": "Patient, pédagogue, disponible.",
+            "profile": (
+                "Passionné aéro, pédagogue, disponible. Profil de relève pour devenir "
+                "Responsable aviation à terme."
+            ),
         },
         {
             "block": "Modération",
