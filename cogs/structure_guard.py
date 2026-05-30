@@ -746,6 +746,8 @@ class StructureGuard(commands.Cog):
                     stats["errors"] += 1
 
             # 5. Réappliquer overrides spécifiques de salon (après sync)
+            # IMPORTANT : on MERGE l'override salon avec l'override existant
+            # (hérité de la cat via sync) pour ne PAS écraser view_channel etc.
             for ch_spec in cat_spec.get("channels", []):
                 if not ch_spec.get("overrides"):
                     continue
@@ -760,10 +762,17 @@ class StructureGuard(commands.Cog):
                     tgt = resolve(ref)
                     if tgt is None:
                         continue
-                    ow = perm_dict_to_overwrite(spec.get("allow", []), spec.get("deny", []))
+                    # Récupère l'overwrite courant (hérité du sync) et MERGE
+                    existing_ow = ch.overwrites_for(tgt)
+                    new_ow = perm_dict_to_overwrite(
+                        spec.get("allow", []), spec.get("deny", [])
+                    )
+                    for perm_name, perm_value in new_ow:
+                        if perm_value is not None:
+                            setattr(existing_ow, perm_name, perm_value)
                     try:
-                        await ch.set_permissions(tgt, overwrite=ow,
-                                                 reason="apply-target — override salon")
+                        await ch.set_permissions(tgt, overwrite=existing_ow,
+                                                 reason="apply-target — merge override salon")
                         stats["ch_overrides"] += 1
                     except discord.Forbidden:
                         errors.append(f"Refus override {ch.name}/{ref}")
@@ -866,6 +875,7 @@ class StructureGuard(commands.Cog):
                     stats["errors"] += 1
 
             # 3. Pour les salons V2 avec overrides spécifiques → les réappliquer après sync
+            # MERGE l'override salon avec celui hérité (sync), ne pas remplacer
             for ch_spec in cat_spec.get("channels", []):
                 if not ch_spec.get("overrides"):
                     continue
@@ -881,10 +891,16 @@ class StructureGuard(commands.Cog):
                     tgt = resolve(ref)
                     if tgt is None:
                         continue
-                    ow = perm_dict_to_overwrite(spec.get("allow", []), spec.get("deny", []))
+                    existing_ow = ch.overwrites_for(tgt)
+                    new_ow = perm_dict_to_overwrite(
+                        spec.get("allow", []), spec.get("deny", [])
+                    )
+                    for perm_name, perm_value in new_ow:
+                        if perm_value is not None:
+                            setattr(existing_ow, perm_name, perm_value)
                     try:
-                        await ch.set_permissions(tgt, overwrite=ow,
-                                                 reason="Resync V2 — override salon")
+                        await ch.set_permissions(tgt, overwrite=existing_ow,
+                                                 reason="Resync V2 — merge override salon")
                         stats["ch_overrides"] += 1
                     except discord.Forbidden:
                         errors.append(f"Refus override {ch.name}/{ref}")

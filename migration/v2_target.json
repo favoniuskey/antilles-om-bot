@@ -532,18 +532,21 @@
       "position": 4,
       "overrides": {
         "@everyone": {"deny": ["view_channel"]},
-        "Non vérifié": {"allow": ["view_channel", "read_message_history", "send_messages", "attach_files", "embed_links"]},
-        "Membre": {"allow": ["view_channel", "send_messages", "read_message_history", "attach_files", "embed_links", "add_reactions", "create_public_threads", "send_messages_in_threads"]},
-        "Helper": {"allow": ["manage_messages", "manage_threads"]},
-        "Modérateur": {"allow": ["manage_messages", "manage_channels", "manage_threads"]},
-        "Responsable communauté": {"allow": ["view_channel", "send_messages", "manage_messages", "manage_channels", "manage_threads"]},
+        "Non vérifié": {"allow": ["view_channel", "read_message_history"], "deny": ["send_messages"]},
+        "Membre": {"allow": ["view_channel", "read_message_history", "add_reactions"], "deny": ["send_messages"]},
+        "Helper": {"allow": ["view_channel", "send_messages", "read_message_history", "manage_messages", "manage_threads"]},
+        "Modérateur": {"allow": ["view_channel", "send_messages", "read_message_history", "manage_messages", "manage_channels", "manage_threads"]},
+        "Responsable communauté": {"allow": ["view_channel", "send_messages", "read_message_history", "manage_messages", "manage_channels", "manage_threads"]},
         "Antilles - Outre Mer": {"allow": ["view_channel", "send_messages", "manage_messages", "manage_channels", "manage_threads", "embed_links", "attach_files"]},
         "Muted": {"deny": ["send_messages", "speak", "add_reactions", "send_messages_in_threads"]}
       },
       "channels": [
         {"name": "🚨・ticket-support", "type": "text", "existing_id": "1314609406029070447"},
         {"name": "🎧・ticket-atc", "type": "text", "existing_id": "1228668601687343155"},
-        {"name": "❓・questions", "type": "text", "existing_id": "1228752524677222430"}
+        {"name": "❓・questions", "type": "text", "existing_id": "1228752524677222430", "overrides": {
+          "Non vérifié": {"allow": ["send_messages", "attach_files", "embed_links", "create_public_threads", "send_messages_in_threads"]},
+          "Membre": {"allow": ["send_messages", "attach_files", "embed_links", "create_public_threads", "send_messages_in_threads", "use_external_emojis"]}
+        }}
       ]
     },
     {
