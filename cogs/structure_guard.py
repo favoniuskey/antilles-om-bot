@@ -1473,6 +1473,43 @@ class StructureGuard(commands.Cog):
             )
 
     @structure.command(
+        name="clean-double-roles",
+        description="Retire Non vérifié aux membres qui ont aussi Membre (rattrapage bug)",
+    )
+    @require_governance()
+    async def clean_double_roles(self, interaction: discord.Interaction) -> None:
+        await interaction.response.defer(ephemeral=True, thinking=True)
+        guild = interaction.guild
+        non_verifie = discord.utils.get(guild.roles, name="Non vérifié")
+        membre = discord.utils.get(guild.roles, name="Membre")
+        if non_verifie is None or membre is None:
+            await interaction.followup.send(
+                "❌ Rôles `Non vérifié` ou `Membre` introuvables.", ephemeral=True
+            )
+            return
+
+        fixed = 0
+        failed: list[str] = []
+        for m in guild.members:
+            if m.bot:
+                continue
+            if membre in m.roles and non_verifie in m.roles:
+                try:
+                    await m.remove_roles(non_verifie, reason="Cleanup double-rôle V2")
+                    fixed += 1
+                except (discord.Forbidden, discord.HTTPException):
+                    failed.append(m.display_name)
+
+        msg = f"✅ **{fixed} membres** nettoyés (Non vérifié retiré)."
+        if failed:
+            msg += f"\n⚠️ Échecs : {', '.join(failed[:10])}"
+            if len(failed) > 10:
+                msg += f" et {len(failed) - 10} autres"
+        if fixed == 0 and not failed:
+            msg = "ℹ️ Aucun membre n'avait les deux rôles."
+        await interaction.followup.send(msg, ephemeral=True)
+
+    @structure.command(
         name="onboard-existing",
         description="Attribue Non vérifié à tous les membres qui n'ont aucun rôle d'accès",
     )
@@ -2082,15 +2119,30 @@ class AcceptRulesView(discord.ui.View):
                 ephemeral=True,
             )
             return
+        # Ajouter Membre
         try:
             await member.add_roles(membre, reason="Acceptation du règlement V2")
-            if non_verifie and non_verifie in member.roles:
-                await member.remove_roles(non_verifie, reason="Acceptation du règlement V2")
         except discord.Forbidden:
             await interaction.response.send_message(
-                "❌ Permission refusée. Contacte un admin.", ephemeral=True
+                "❌ Permission refusée pour t'attribuer Membre. Contacte un admin.",
+                ephemeral=True,
             )
             return
+        except discord.HTTPException:
+            await interaction.response.send_message(
+                "❌ Erreur Discord. Réessaie dans quelques secondes.",
+                ephemeral=True,
+            )
+            return
+
+        # Retirer Non vérifié (sans check cache : Discord ignore si pas présent)
+        if non_verifie is not None:
+            try:
+                await member.remove_roles(non_verifie, reason="Acceptation du règlement V2")
+            except (discord.Forbidden, discord.HTTPException):
+                # Pas bloquant — on log et on continue
+                pass
+
         await interaction.response.send_message(
             f"✅ **Bienvenue {member.mention} !**\n"
             f"Tu as accepté le règlement et obtenu le rôle `Membre`. "
